@@ -210,8 +210,19 @@ void TrainView::draw()
 				-0.5f ,0.0f , -0.5f,
 				-0.5f ,0.0f , 0.5f ,
 				0.5f ,0.0f ,0.5f ,
-				0.5f ,0.0f ,-0.5f };
+				0.5f ,0.0f ,-0.5f,
+			};
+			GLfloat wall_vertices[] = {
+				10.0f, 15.0f, -10.0f,  //the first wall
+				-10.0f, 15.0f, -10.0f,
+				-10.0f, -0.5f, -10.0f,
+				10.0f, -0.5f, -10.0f,
 
+				-10.0f, 15.0f, 10.0f,  //the second wall
+				-10.0f, 15.0f, -10.0f,
+				-10.0f, -0.5f, -10.0f,
+				-10.0f, -0.5f, 10.0f
+			};
 			static const GLfloat cube_vertices[] = {
 				-1.0f,-1.0f,-1.0f,
 				-1.0f,-1.0f, 1.0f,
@@ -251,10 +262,16 @@ void TrainView::draw()
 				 1.0f,-1.0f, 1.0f
 			};
 			GLfloat  triangle_vertices[] = {
-				0.5f,  0.0f, -0.0f,  0.0f, 1.0f, 0.0f,
-				-0.5f, 0.0f, 0.5f,  0.0f, 0.0f, 1.0f,
-				-0.5f, 0.0f, -0.5f,  1.0f, 0.0f, 0.0f
+				0.5f,  0.0f, -0.0f,
+				-0.5f, 0.0f, 0.5f,
+				-0.5f, 0.0f, -0.5f
 			};
+			float wall_color[3] = { 0.4, 0.7, 0.8 };
+			static GLfloat cube_color[24];
+			for (int i = 0; i < 8; ++i) {
+				for(int j = 0; j<3; ++j)
+				cube_color[i*3+j] = wall_color[j];
+			}
 			GLfloat  normal[] = {
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f,
@@ -267,15 +284,57 @@ void TrainView::draw()
 			//	0.0f, 1.0f };
 
 			GLfloat  texture_coordinate[] = {
-				0.5f, 1.0f,
+				0.0f, 1.0f,
+				0.0f, 0.0f,
 				1.0f, 0.0f,
-				0.0f, 0.0f	
+				1.0f, 1.0f,
+				0.0f, 1.0f,
+				0.0f, 0.0f,
+				1.0f, 0.0f,
+				1.0f, 1.0f
 			};
-			GLuint element[] = {
-				0, 1, 2,
-				0, 2, 3, };
+			static const GLfloat cube_texture_coordinate[] = {
+	0.000059f, 1.0f - 0.000004f,
+	0.000103f, 1.0f - 0.336048f,
+	0.335973f, 1.0f - 0.335903f,
+	1.000023f, 1.0f - 0.000013f,
+	0.667979f, 1.0f - 0.335851f,
+	0.999958f, 1.0f - 0.336064f,
+	0.667979f, 1.0f - 0.335851f,
+	0.336024f, 1.0f - 0.671877f,
+	0.667969f, 1.0f - 0.671889f,
+	1.000023f, 1.0f - 0.000013f,
+	0.668104f, 1.0f - 0.000013f,
+	0.667979f, 1.0f - 0.335851f,
+	0.000059f, 1.0f - 0.000004f,
+	0.335973f, 1.0f - 0.335903f,
+	0.336098f, 1.0f - 0.000071f,
+	0.667979f, 1.0f - 0.335851f,
+	0.335973f, 1.0f - 0.335903f,
+	0.336024f, 1.0f - 0.671877f,
+	1.000004f, 1.0f - 0.671847f,
+	0.999958f, 1.0f - 0.336064f,
+	0.667979f, 1.0f - 0.335851f,
+	0.668104f, 1.0f - 0.000013f,
+	0.335973f, 1.0f - 0.335903f,
+	0.667979f, 1.0f - 0.335851f,
+	0.335973f, 1.0f - 0.335903f,
+	0.668104f, 1.0f - 0.000013f,
+	0.336098f, 1.0f - 0.000071f,
+	0.000103f, 1.0f - 0.336048f,
+	0.000004f, 1.0f - 0.671870f,
+	0.336024f, 1.0f - 0.671877f,
+	0.000103f, 1.0f - 0.336048f,
+	0.336024f, 1.0f - 0.671877f,
+	0.335973f, 1.0f - 0.335903f,
+	0.667969f, 1.0f - 0.671889f,
+	1.000004f, 1.0f - 0.671847f,
+	0.667979f, 1.0f - 0.335851f
+			};
+			GLuint element[8];
+			for (int i = 0; i < 8; ++i) {element[i] = i;}
 
-			this->plane = new VAO;
+			this->plane = new VAO; 
 			this->plane->element_amount = sizeof(element) / sizeof(GLuint);
 			glGenVertexArrays(1, &this->plane->vao);
 			glGenBuffers(3, this->plane->vbo);
@@ -290,24 +349,25 @@ void TrainView::draw()
 			//glEnableVertexAttribArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color), cube_color, GL_STATIC_DRAW);
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(3);
 
-
-
-			// Normal attribute
-			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-			glEnableVertexAttribArray(1);
+			////Normal attribute
+			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
+			//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
+			//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+			//glEnableVertexAttribArray(1);
 
 			// Texture Coordinate attribute
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[2]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(texture_coordinate), texture_coordinate, GL_STATIC_DRAW);
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
 			glEnableVertexAttribArray(2);
 
 			//Element attribute
@@ -319,7 +379,7 @@ void TrainView::draw()
 		}
 
 		if (!this->texture)
-			this->texture = new Texture2D(PROJECT_DIR "/Images/church.png");
+			this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 
 		if (!this->device){
 			//Tutorial: https://ffainelli.github.io/openal-example/
@@ -501,14 +561,16 @@ void TrainView::draw()
 		glGetUniformLocation(this->shader->Program, "u_color"), 
 		1, 
 		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
 	this->texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 	
 	//bind VAO
 	glBindVertexArray(this->plane->vao);
 
-	glDrawElements(GL_TRIANGLES, this->plane->element_amount, GL_UNSIGNED_INT, 0);
-
+	glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
+	//glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 	//unbind VAO
 	glBindVertexArray(0);
 
