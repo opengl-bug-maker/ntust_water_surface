@@ -211,16 +211,66 @@ void TrainView::draw()
 				-0.5f ,0.0f , 0.5f ,
 				0.5f ,0.0f ,0.5f ,
 				0.5f ,0.0f ,-0.5f };
+
+			static const GLfloat cube_vertices[] = {
+				-1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f,
+				 1.0f, 1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f,-1.0f,
+				 1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f,-1.0f,
+				 1.0f,-1.0f,-1.0f,
+				 1.0f, 1.0f,-1.0f,
+				 1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f,-1.0f,
+				 1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				-1.0f,-1.0f, 1.0f,
+				 1.0f,-1.0f, 1.0f,
+				 1.0f, 1.0f, 1.0f,
+				 1.0f,-1.0f,-1.0f,
+				 1.0f, 1.0f,-1.0f,
+				 1.0f,-1.0f,-1.0f,
+				 1.0f, 1.0f, 1.0f,
+				 1.0f,-1.0f, 1.0f,
+				 1.0f, 1.0f, 1.0f,
+				 1.0f, 1.0f,-1.0f,
+				-1.0f, 1.0f,-1.0f,
+				 1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				 1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f,
+				 1.0f,-1.0f, 1.0f
+			};
+			GLfloat  triangle_vertices[] = {
+				0.5f,  0.0f, -0.0f,  0.0f, 1.0f, 0.0f,
+				-0.5f, 0.0f, 0.5f,  0.0f, 0.0f, 1.0f,
+				-0.5f, 0.0f, -0.5f,  1.0f, 0.0f, 0.0f
+			};
 			GLfloat  normal[] = {
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f };
+			//GLfloat  texture_coordinate[] = {
+			//	0.0f, 0.0f,
+			//	1.0f, 0.0f,
+			//	1.0f, 1.0f,
+			//	0.0f, 1.0f };
+
 			GLfloat  texture_coordinate[] = {
-				0.0f, 0.0f,
+				0.5f, 1.0f,
 				1.0f, 0.0f,
-				1.0f, 1.0f,
-				0.0f, 1.0f };
+				0.0f, 0.0f	
+			};
 			GLuint element[] = {
 				0, 1, 2,
 				0, 2, 3, };
@@ -234,10 +284,19 @@ void TrainView::draw()
 			glBindVertexArray(this->plane->vao);
 
 			// Position attribute
+			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
+			//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+			//glEnableVertexAttribArray(0);
+
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+			glEnableVertexAttribArray(3);
+
+
 
 			// Normal attribute
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
