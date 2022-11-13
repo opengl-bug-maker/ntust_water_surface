@@ -23,7 +23,6 @@ out V_OUT
 void main()
 {
     gl_Position = u_projection * u_view * u_model * vec4(position, 1.0f);
-    //gl_Position.y+=20;
     v_out.position = vec3(u_model * vec4(position, 1.0f));
     v_out.normal = mat3(transpose(inverse(u_model))) * normal;
     v_out.texture_coordinate = vec2(texture_coordinate.x, 1.0f - texture_coordinate.y);

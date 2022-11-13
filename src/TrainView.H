@@ -94,8 +94,10 @@ class TrainView : public Fl_Gl_Window
 		CTrack*			m_pTrack;		// The track of the entire scene
 
 		Shader* shader		= nullptr;
+		Shader* water_shader = nullptr;
 		Texture2D* texture	= nullptr;
 		VAO* plane			= nullptr;
+		VAO* water_wave = nullptr;
 		UBO* commom_matrices= nullptr;
 
 		//OpenAL
