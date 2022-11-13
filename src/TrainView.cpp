@@ -51,12 +51,13 @@
 // * Constructor to set up the GL window
 //========================================================================
 TrainView::
-TrainView(int x, int y, int w, int h, const char* l) 
-	: Fl_Gl_Window(x,y,w,h,l)
+TrainView(int x, int y, int w, int h,TrainWindow* tw, const char* l) : Fl_Gl_Window(x,y,w,h,l)
 //========================================================================
 {
+	this->tw = tw;
+	this->_water.tw = tw;
 	mode( FL_RGB|FL_ALPHA|FL_DOUBLE | FL_STENCIL );
-	water_simulator = water_simulation(30, nullptr);
+	//water_simulator = water_simulation(30, nullptr);
 	// water_simulator.surfaces[5][5].height = 3;
 	//this->water_wave = new VAO;
 	resetArcball();
@@ -196,6 +197,7 @@ void TrainView::draw()
 	{
 		
 		//initiailize VAO, VBO, Shader...
+		_water.GL_Init();
 		if (!this->shader)
 			this->shader = new
 			Shader(
@@ -343,44 +345,43 @@ void TrainView::draw()
 			
 			//vector<triangle_t> triangles;
 			//water_simulator.get_matrix(triangles);
-			//for (int i = 0; i < edge_length; i += stride) {
-			//	for (int j = 0; j < edge_length; j += stride) {
-			//		/*  a   d
-			//		*     _
-			//		*	 |_|
-			//		*	b   c
-			//		*/
-			//		float x = i-10, y = j-10;
-			//		glm::vec3 a(x, 12.0, y );
-			//		glm::vec3 b( x+1, 12.0, y);
-			//		glm::vec3 c( x+1, 12.0, y+1 );
-			//		glm::vec3 d( x, 12.0, y+1 );
-			//		//lower left
-			//		triangle_t lower_left;
-			//		lower_left.vertices = { a, b, c };
-			//		
-			//		//top right
-			//		triangle_t upper_right;
-			//		upper_right.vertices = { a, d, c };
+			for (int i = 0; i < edge_length; i += stride) {
+				for (int j = 0; j < edge_length; j += stride) {
+					/*  a   d
+					*     _
+					*	 |_|
+					*	b   c
+					*/
+					float x = i-10, y = j-10;
+					glm::vec3 a(x, 12.0, y );
+					glm::vec3 b( x+1, 12.0, y);
+					glm::vec3 c( x+1, 12.0, y+1 );
+					glm::vec3 d( x, 12.0, y+1 );
+					//lower left
+					triangle_t lower_left;
+					lower_left.vertices = { a, b, c };
+					
+					//top right
+					triangle_t upper_right;
+					upper_right.vertices = { a, d, c };
 
-			//		triangles.push_back(lower_left);
-			//		triangles.push_back(upper_right);
-			//	}
-			//}
+					triangles.push_back(lower_left);
+					triangles.push_back(upper_right);
+				}
+			}
 			
-			water_simulator.get_matrix(triangles);
+			//water_simulator.get_matrix(triangles);
 			//GLfloat* water_vertices = new GLfloat[5400*3];
 			//water_simulator.get_matrix(triangles);
-			//int water_vertices_n = 0;
+			int water_vertices_n = 0;
 			//std::cout << triangles.size() << " " << triangles[0].vertices.size() << std::endl;
-
-			//for (auto& triangle : triangles) { //200
-			//	for (auto& vertice : triangle.vertices) { //3
-			//		water_vertices[water_vertices_n++] = vertice.x;
-			//		water_vertices[water_vertices_n++] = vertice.y;
-			//		water_vertices[water_vertices_n++] = vertice.z;
-			//	}
-			//}
+			for (auto& triangle : triangles) { //200
+				for (auto& vertice : triangle.vertices) { //3
+					water_vertices[water_vertices_n++] = vertice.x;
+					water_vertices[water_vertices_n++] = vertice.y;
+					water_vertices[water_vertices_n++] = vertice.z;
+				}
+			}
 			
 			float water_color_sample[3] = { 0.4, 0.7, 0.8 };
 			static GLfloat water_color[60];
@@ -438,8 +439,8 @@ void TrainView::draw()
 
 			// Unbind VAO
 			
-			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
-			//glBindVertexArray(0);
+			//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
+			glBindVertexArray(0);
 
 		}
 
@@ -615,45 +616,50 @@ void TrainView::draw()
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
 
-	//bind shader
-	this->shader->Use();
+	////bind shader
+	//this->shader->Use();
+
+	//glm::mat4 model_matrix = glm::mat4();
+	//model_matrix = glm::translate(model_matrix, this->source_pos);
+	//model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	//this->texture->bind(0);
+	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	//
+	////bind VAO
+	//glBindVertexArray(this->plane->vao);
+	//glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
+
+	//glBindVertexArray(0);
+
+	//glUseProgram(0);
+
+	
+	
+	//setUBO();
+	_water.Draw();
+	// recalculate the water triangles
+	//int water_vertices_n = 0;
+	//triangles.clear();
+	//water_simulator.get_matrix(triangles);
+	//for (auto& triangle : triangles) { //200
+	//	for (auto& vertice : triangle.vertices) { //3
+	//		water_vertices[water_vertices_n++] = vertice.x;	
+	//		water_vertices[water_vertices_n++] = vertice.y;
+	//		water_vertices[water_vertices_n++] = vertice.z;
+	//	}
+	//}
+
+
 
 	glm::mat4 model_matrix = glm::mat4();
 	model_matrix = glm::translate(model_matrix, this->source_pos);
 	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
-	glUniformMatrix4fv(
-		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	this->texture->bind(0);
-	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
-	
-	//bind VAO
-	glBindVertexArray(this->plane->vao);
-	glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
-
-	glBindVertexArray(0);
-
-	glUseProgram(0);
-
-	
-	
-	setUBO();
-
-	// recalculate the water triangles
-	int water_vertices_n = 0;
-	triangles.clear();
-	water_simulator.get_matrix(triangles);
-	for (auto& triangle : triangles) { //200
-		for (auto& vertice : triangle.vertices) { //3
-			water_vertices[water_vertices_n++] = vertice.x;	
-			water_vertices[water_vertices_n++] = vertice.y;
-			water_vertices[water_vertices_n++] = vertice.z;
-		}
-	}
-
 	//rewrite the triangles martics in buffer
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(water_vertices), water_vertices);
 	this->water_shader->Use();
@@ -667,10 +673,10 @@ void TrainView::draw()
 		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
 	glUniform3fv(
 		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	this->texture->bind(0);
-	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	//this->texture->bind(0);
+	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 	glBindVertexArray(this->water_wave->vao);
-	glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	//glDrawArrays(GL_TRIANGLES, 0, 12 * 3);

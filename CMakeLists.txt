@@ -7,7 +7,9 @@ set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib/)
 
 set(SRC_SHADER 
     ${SRC_DIR}shaders/simple.vert
-    ${SRC_DIR}shaders/simple.frag)
+    ${SRC_DIR}shaders/simple.frag
+    ${SRC_DIR}shaders/water.vert
+    ${SRC_DIR}shaders/water.frag)
 
 set(SRC_RENDER_UTILITIES
     ${SRC_DIR}RenderUtilities/BufferObject.h
@@ -29,6 +31,11 @@ add_executable(WaterSurface
     ${SRC_DIR}TrainView.h
     ${SRC_DIR}TrainWindow.h
     ${SRC_DIR}water_simulation.h
+    ${SRC_DIR}cpu_object.h
+    ${SRC_DIR}gpu_object.h
+    ${SRC_DIR}info_pack.h
+    ${SRC_DIR}water.h
+
 
     ${SRC_DIR}main.cpp
     ${SRC_DIR}CallBacks.cpp
@@ -36,11 +43,12 @@ add_executable(WaterSurface
     ${SRC_DIR}Track.cpp
     ${SRC_DIR}TrainView.cpp
     ${SRC_DIR}TrainWindow.cpp
-    ${SRC_DIR}Object.cpp	
+    ${SRC_DIR}Object.cpp
+    ${SRC_DIR}water.cpp	
     ${SRC_DIR}water_simulation.cpp
-
-
-
+    ${SRC_DIR}cpu_object.cpp
+    ${SRC_DIR}gpu_object.cpp
+    ${SRC_DIR}info_pack.cpp
 
     ${SRC_SHADER}
     ${SRC_RENDER_UTILITIES}

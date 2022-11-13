@@ -59,12 +59,12 @@ class CTrack;
 
 // this uses the old ArcBall Code
 #include "Utilities/ArcBallCam.H"
-
+#include "water.h"
 class TrainView : public Fl_Gl_Window
 {
 	public:
 		// note that we keep the "standard widget" constructor arguments
-		TrainView(int x, int y, int w, int h, const char* l = 0);
+		TrainView(int x, int y, int w, int h,TrainWindow* tw, const char* l = 0);
 
 		// overrides of important window things
 		virtual int handle(int);
@@ -81,7 +81,6 @@ class TrainView : public Fl_Gl_Window
 
 		// Reset the Arc ball control
 		void resetArcball();
-
 		// pick a point (for when the mouse goes down)
 		void doPick();
 
@@ -109,8 +108,8 @@ class TrainView : public Fl_Gl_Window
 		ALCcontext* context = nullptr;
 		ALuint source;
 		ALuint buffer;
-
+		
 		//water simulation
-		water_simulation water_simulator = water_simulation(9, nullptr);
-
+		//water_simulation water_simulator = water_simulation(9, nullptr);
+		water _water = water(nullptr);
 };
