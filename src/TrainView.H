@@ -29,6 +29,7 @@
 #include "RenderUtilities/BufferObject.h"
 #include "RenderUtilities/Shader.h"
 #include "RenderUtilities/Texture.h"
+#include "water_simulation.h"
 
 // Preclarify for preventing the compiler error
 class TrainWindow;
@@ -87,6 +88,7 @@ class TrainView : public Fl_Gl_Window
 		//set ubo
 		void setUBO();
 	public:
+		unsigned int tick = 0;
 		ArcBallCam		arcball;			// keep an ArcBall for the UI
 		int				selectedCube = -1;  // simple - just remember which cube is selected
 
@@ -108,5 +110,7 @@ class TrainView : public Fl_Gl_Window
 		ALuint source;
 		ALuint buffer;
 
+		//water simulation
+		water_simulation water_simulator = water_simulation(9, nullptr);
 
 };

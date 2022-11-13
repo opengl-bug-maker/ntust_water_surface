@@ -53,6 +53,7 @@ TrainWindow(const int x, const int y)
 
 		trainView = new TrainView(5,5,590,590);
 		trainView->tw = this;
+		trainView->water_simulator.tw = this;
 		trainView->m_pTrack = &m_Track;
 		this->resizable(trainView);
 
@@ -142,6 +143,25 @@ TrainWindow(const int x, const int y)
 
 		pty+=30;
 
+		Fl_Button* touch = new Fl_Button(605,pty,90,20,"touchWater");
+		touch->callback((Fl_Callback*)touchWater,this);
+
+		pty+=30;
+		SlowDown = new Fl_Value_Slider(655,pty,140,20,"SlowDown");
+		SlowDown->range(0,1);
+		SlowDown->value(0.95);
+		SlowDown->align(FL_ALIGN_LEFT);
+		SlowDown->type(FL_HORIZONTAL);
+
+		pty += 30;
+		Speed = new Fl_Value_Slider(655,pty,140,20,"Speed");
+		Speed->range(0,1);
+		Speed->value(0.6);
+		Speed->align(FL_ALIGN_LEFT);
+		Speed->type(FL_HORIZONTAL);
+
+		pty += 30;
+
 		// TODO: add widgets for all of your fancier features here
 #ifdef EXAMPLE_SOLUTION
 		makeExampleWidgets(this,pty);
@@ -195,6 +215,9 @@ void TrainWindow::
 advanceTrain(float dir)
 //========================================================================
 {
+	trainView->tick++;
+	trainView->water_simulator.tickBack();
+	trainView->water_simulator.fresh();
 	//#####################################################################
 	// TODO: make this work for your train
 	//#####################################################################
