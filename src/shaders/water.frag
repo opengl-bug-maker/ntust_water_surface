@@ -16,17 +16,17 @@ uniform sampler2D u_texture;
 
 void main()
 {   
-	float ambientStrength = 0.99f;
+	float ambientStrength = 0.3f;
 	vec3 ambient = ambientStrength * light_color;
 
 	vec3 norm = normalize(f_in.normal);
-	vec3 lightDir = normalize(lightPos - f_in.position);  
+	vec3 lightDir = normalize(lightPos - f_in.position);  // 0, 5, 0 - x, 5 ,y
 
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = diff * light_color;
 
 	vec3 result = (ambient + diffuse) * vec3(0.92f, 0.5f, 0.77f);
-	f_color = vec4(result, 1.0);
+	f_color = vec4(result, 0.3f);
     //vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*f_in.color;
     //f_color = vec4(0.92f, 0.5f, 0.77f, 1.0f);
 }

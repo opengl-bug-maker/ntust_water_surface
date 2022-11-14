@@ -8,7 +8,7 @@
 #include "Utilities/3DUtils.H"
 using namespace std;
 water::water(TrainWindow* tw) : tw(tw) {
-    count = 30;
+    count = 60;
     init();
 }
 void water::init() {
@@ -182,6 +182,13 @@ void water::GL_Draw() {
 			NormalVectors[(i * count + j) * 3 + 2] = normal.z;
 		}
 	}
+	//for (int i = 0; i < count; ++i) {
+	//	for (int j = 0; j < count; ++j) {
+	//		cout << NormalVectors[(i * count + j) * 3 + 0] << " ";
+	//		cout << NormalVectors[(i * count + j) * 3 + 1] << " ";
+	//		cout << NormalVectors[(i * count + j) * 3 + 2] << endl;
+	//	}
+	//}
 
 	glm::mat4 view_matrix;
 	glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]);
@@ -201,12 +208,15 @@ void water::GL_Draw() {
 	//position
 	//todo : fuck up
 	glBindBuffer(GL_ARRAY_BUFFER, this->data->vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, count* count * 3 * sizeof(GLfloat), Heights, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, count * count * 3 * sizeof(GLfloat), Heights, GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, this->data->vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, count * count * 3 * sizeof(GLfloat), NormalVectors, GL_DYNAMIC_DRAW);
 	
 
 	glm::mat4 model_matrix = glm::mat4();
-	/*model_matrix = glm::translate(model_matrix, glm::vec3(0.0f, 5.0f, 0.0f));
-	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));*/
+	model_matrix = glm::translate(model_matrix, glm::vec3(0.0f, 5.0f, 0.0f));
+	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
 
 	glUniformMatrix4fv(
 		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
@@ -215,7 +225,9 @@ void water::GL_Draw() {
 		1,
 		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
 	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 1.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "lightPos"), 1, &glm::vec3(0.0f, 100.0f, 100.0f)[0]);
 	//this->texture->bind(0);
 	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 

@@ -24,7 +24,8 @@ void main()
 {
     gl_Position = u_projection * u_view * u_model * vec4(position, 1.0f);
     v_out.position = vec3(u_model * vec4(position, 1.0f));
-    v_out.normal = mat3(transpose(inverse(u_model))) * normal;
+    //v_out.normal = mat3(transpose(inverse(u_model))) * normal;
+	v_out.normal = normal;
     v_out.texture_coordinate = vec2(texture_coordinate.x, 1.0f - texture_coordinate.y);
     v_out.color = color;
 }
