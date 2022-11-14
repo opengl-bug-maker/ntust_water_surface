@@ -228,6 +228,8 @@ void water::GL_Draw() {
 		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 1.0f)[0]);
 	glUniform3fv(
 		glGetUniformLocation(this->shader->Program, "lightPos"), 1, &glm::vec3(0.0f, 100.0f, 100.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &glm::vec3(0.0f, 100.0f, 0.0f)[0]);
 	//this->texture->bind(0);
 	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 
