@@ -12,11 +12,17 @@ water::water(TrainWindow* tw) : tw(tw) {
     init();
 }
 void water::init() {
+	float step = 20.0f / count;
     surfaces = new surface * [count + 2];
     for (int i = 0; i < count + 2; ++i) {
         surfaces[i] = new surface[count + 2];
+		for (int j = 0; j < count + 2; ++j) {
+			surfaces[i][j].x = -10.0f + step * (i - 1);
+			surfaces[i][j].y = -10.0f + step * (j - 1);
+		}
     }
     Heights = new GLfloat[count * count * 3];
+	NormalVectors = new GLfloat[count * count * 3];
     Elements = new GLuint[(count - 1) * (count - 1) * 2 * 3];
 	int index = 0;
     for (int i = 0; i < count - 1; i++) {
@@ -60,6 +66,12 @@ void water::GL_Init(){
 		glBufferData(GL_ARRAY_BUFFER, count * count * 3 * sizeof(GLfloat), Heights, GL_DYNAMIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
 		glEnableVertexAttribArray(0);
+
+		//normal
+		glBindBuffer(GL_ARRAY_BUFFER, this->data->vbo[1]);
+		glBufferData(GL_ARRAY_BUFFER, count * count * 3 * sizeof(GLfloat), NormalVectors, GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->data->ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, (count - 1) * (count - 1) * 2 * 3 * sizeof(GLuint), Elements, GL_STATIC_DRAW);
@@ -139,11 +151,37 @@ void water::GL_Draw() {
     float step = 20.0f / count;
     for (int i = 0; i < count; i++) {
         for (int j = 0; j < count; j++) {
-            Heights[(i * count + j) * 3 + 0] = -10.0f + step * i;
+            Heights[(i * count + j) * 3 + 0] = surfaces[i + 1][j + 1].x;
             Heights[(i * count + j) * 3 + 1] = surfaces[i + 1][j + 1].height;
-            Heights[(i * count + j) * 3 + 2] = -10.0f + step * j;
+            Heights[(i * count + j) * 3 + 2] = surfaces[i + 1][j + 1].y;
         }
     }
+	for (int i = 0; i < count; i++) {
+		for (int j = 0; j < count; j++) {
+			Pnt3f normal = Pnt3f(0, 0, 0);
+			Pnt3f p0 = Pnt3f(surfaces[i + 1][j + 1].x, surfaces[i + 1][j + 1].height, surfaces[i + 1][j + 1].y);
+			Pnt3f p1 = Pnt3f(surfaces[i + 1][j + 2].x, surfaces[i + 1][j + 2].height, surfaces[i + 1][j + 2].y);
+			Pnt3f p2 = Pnt3f(surfaces[i + 2][j + 2].x, surfaces[i + 2][j + 2].height, surfaces[i + 2][j + 2].y);
+			Pnt3f p3 = Pnt3f(surfaces[i + 2][j + 1].x, surfaces[i + 2][j + 1].height, surfaces[i + 2][j + 1].y);
+			Pnt3f p4 = Pnt3f(surfaces[i + 1][j + 0].x, surfaces[i + 1][j + 0].height, surfaces[i + 1][j + 0].y);
+			Pnt3f p5 = Pnt3f(surfaces[i + 0][j + 0].x, surfaces[i + 0][j + 0].height, surfaces[i + 0][j + 0].y);
+			Pnt3f p6 = Pnt3f(surfaces[i + 0][j + 1].x, surfaces[i + 0][j + 1].height, surfaces[i + 0][j + 1].y);
+			
+			normal = normal +
+				((p0 + p2 * -1) * (p1 + p0 * -1)) +
+				((p0 + p3 * -1) * (p2 + p0 * -1)) +
+				((p0 + p4 * -1) * (p3 + p0 * -1)) +
+				((p0 + p5 * -1) * (p4 + p0 * -1)) +
+				((p0 + p6 * -1) * (p5 + p0 * -1)) +
+				((p0 + p1 * -1) * (p6 + p0 * -1));
+
+			normal.normalize();
+
+			NormalVectors[(i * count + j) * 3 + 0] = normal.x;
+			NormalVectors[(i * count + j) * 3 + 1] = normal.y;
+			NormalVectors[(i * count + j) * 3 + 2] = normal.z;
+		}
+	}
 
 	glm::mat4 view_matrix;
 	glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]);

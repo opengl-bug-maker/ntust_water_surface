@@ -8,6 +8,8 @@ public:
     float t2Height = 0;
     float t1Height = 0;
     float height = 0;
+	float x = 0;
+	float y = 0;
 };
 
 class water : public gpu_object {
@@ -20,6 +22,7 @@ class water : public gpu_object {
     //float **Height, **t1Height, **t2Height;
 
     GLfloat* Heights;
+	GLfloat* NormalVectors;
     GLuint* Elements;
 
     surface** surfaces;
