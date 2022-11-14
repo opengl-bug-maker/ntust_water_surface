@@ -23,6 +23,7 @@ class water : public gpu_object {
 
     GLfloat* Heights;
 	GLfloat* NormalVectors;
+	GLfloat* Textures;
     GLuint* Elements;
 
     surface** surfaces;

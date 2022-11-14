@@ -23,6 +23,17 @@ void water::init() {
     }
     Heights = new GLfloat[count * count * 3];
 	NormalVectors = new GLfloat[count * count * 3];
+
+	Textures = new GLfloat[count * count * 2];
+	for (int i = 0; i < count; i++) {
+		for (int j = 0; j < count; j++) {
+			Textures[(i * count + j) * 2 + 0] = (surfaces[i + 1][j + 1].x + 10.0f) / 20.0f;
+			Textures[(i * count + j) * 2 + 1] = -(surfaces[i + 1][j + 1].y + 10.0f) / 20.0f;
+			cout << Textures[(i * count + j) * 2 + 0] << Textures[(i * count + j) * 2 + 1] << endl;
+		}
+	}
+
+
     Elements = new GLuint[(count - 1) * (count - 1) * 2 * 3];
 	int index = 0;
     for (int i = 0; i < count - 1; i++) {
@@ -73,6 +84,12 @@ void water::GL_Init(){
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
 		glEnableVertexAttribArray(1);
 
+		//texture
+		glBindBuffer(GL_ARRAY_BUFFER, this->data->vbo[2]);
+		glBufferData(GL_ARRAY_BUFFER, count * count * 2 * sizeof(GLfloat), Textures, GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(2);
+
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->data->ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, (count - 1) * (count - 1) * 2 * 3 * sizeof(GLuint), Elements, GL_STATIC_DRAW);
 
@@ -99,8 +116,8 @@ void water::GL_Init(){
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
-	//if (!this->texture)
-	//	this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
+	if (!this->texture)
+		this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 }
 
 void water::tickBack() {
@@ -212,6 +229,9 @@ void water::GL_Draw() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, this->data->vbo[1]);
 	glBufferData(GL_ARRAY_BUFFER, count * count * 3 * sizeof(GLfloat), NormalVectors, GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, this->data->vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, count * count * 2 * sizeof(GLfloat), Textures, GL_DYNAMIC_DRAW);
 	
 
 	glm::mat4 model_matrix = glm::mat4();
@@ -230,8 +250,8 @@ void water::GL_Draw() {
 		glGetUniformLocation(this->shader->Program, "lightPos"), 1, &glm::vec3(0.0f, 100.0f, 100.0f)[0]);
 	glUniform3fv(
 		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &glm::vec3(0.0f, 100.0f, 0.0f)[0]);
-	//this->texture->bind(0);
-	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	this->texture->bind(0);
+	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 
 
 

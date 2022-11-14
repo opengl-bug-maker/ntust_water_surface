@@ -31,6 +31,7 @@ void main()
 	vec3 specular = pow(max(0.0, dot(norm, half_vector)), 77.0f) * vec3(1.0, 1.0, 1.0);
 
 	vec3 result = (ambient + diffuse) * vec3(0.3f, 0.5f, 0.92f) + specular;
+	result = result * vec3(texture(u_texture, f_in.texture_coordinate));
 	f_color = vec4(result, 0.3f);
     //vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*f_in.color;
     //f_color = vec4(0.92f, 0.5f, 0.77f, 1.0f);
