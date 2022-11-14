@@ -180,7 +180,8 @@ int TrainView::handle(int event)
 // * this is the code that actually draws the window
 //   it puts a lot of the work into other routines to simplify things
 //========================================================================
-GLfloat water_vertices[5400 * 3];
+//GLfloat water_vertices[5400 * 3];
+GLfloat * water_vertices = new GLfloat[5400 * 3];
 void TrainView::draw()
 {
 
@@ -190,8 +191,8 @@ void TrainView::draw()
 	//
 	//**********************************************************************
 	//initialized glad
-	
-	
+	//GLfloat water_vertices[5400 * 3];
+	//GLfloat* water_vertices = new GLfloat[5400 * 3];
 	vector<triangle_t> triangles;
 	if (gladLoadGL())
 	{
@@ -375,14 +376,17 @@ void TrainView::draw()
 			//water_simulator.get_matrix(triangles);
 			int water_vertices_n = 0;
 			//std::cout << triangles.size() << " " << triangles[0].vertices.size() << std::endl;
-			for (auto& triangle : triangles) { //200
-				for (auto& vertice : triangle.vertices) { //3
-					water_vertices[water_vertices_n++] = vertice.x;
-					water_vertices[water_vertices_n++] = vertice.y;
-					water_vertices[water_vertices_n++] = vertice.z;
-				}
+			//for (auto& triangle : triangles) { //200
+			//	for (auto& vertice : triangle.vertices) { //3
+			//		water_vertices[water_vertices_n++] = vertice.x;
+			//		water_vertices[water_vertices_n++] = vertice.y;
+			//		water_vertices[water_vertices_n++] = vertice.z;
+			//	}
+			//}
+			for (int i = 0; i < 30; ++i) {
+				std::cout << water_vertices[i] << " ";
 			}
-			
+			std::cout << std::endl;
 			float water_color_sample[3] = { 0.4, 0.7, 0.8 };
 			static GLfloat water_color[60];
 			for (int i = 0; i < 20; ++i) {
@@ -412,7 +416,8 @@ void TrainView::draw()
 			//glEnableVertexAttribArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_DYNAMIC_DRAW);
+			//glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, 5400 * 3 * sizeof(GLfloat), water_vertices, GL_DYNAMIC_DRAW);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(0);
 
@@ -612,41 +617,44 @@ void TrainView::draw()
 		unsetupShadows();
 	}
 
+	_water.Draw();
+
+
 	setUBO();
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
 
-	////bind shader
-	//this->shader->Use();
+	//bind shader
+	this->shader->Use();
 
-	//glm::mat4 model_matrix = glm::mat4();
-	//model_matrix = glm::translate(model_matrix, this->source_pos);
-	//model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
-	//glUniformMatrix4fv(
-	//	glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	//glUniform3fv(
-	//	glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	//glUniform3fv(
-	//	glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	//this->texture->bind(0);
-	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	glm::mat4 model_matrix = glm::mat4();
+	model_matrix = glm::translate(model_matrix, this->source_pos);
+	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
+	glUniformMatrix4fv(
+		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	this->texture->bind(0);
+	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	
+	//bind VAO
+	glBindVertexArray(this->plane->vao);
+	glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
+
+	////glUseProgram(0);
+
 	//
-	////bind VAO
-	//glBindVertexArray(this->plane->vao);
-	//glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
-
-	//glBindVertexArray(0);
-
-	//glUseProgram(0);
-
-	
-	
-	//setUBO();
-	_water.Draw();
-	// recalculate the water triangles
+	//
+	////setUBO();
+	//// recalculate the water triangles
+	//
 	//int water_vertices_n = 0;
-	//triangles.clear();
-	//water_simulator.get_matrix(triangles);
+	////triangles.clear();
+	////water_simulator.get_matrix(triangles);
 	//for (auto& triangle : triangles) { //200
 	//	for (auto& vertice : triangle.vertices) { //3
 	//		water_vertices[water_vertices_n++] = vertice.x;	
@@ -657,27 +665,28 @@ void TrainView::draw()
 
 
 
-	glm::mat4 model_matrix = glm::mat4();
-	model_matrix = glm::translate(model_matrix, this->source_pos);
-	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
-	//rewrite the triangles martics in buffer
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(water_vertices), water_vertices);
-	this->water_shader->Use();
+	//glm::mat4 model_matrix = glm::mat4();
+	//model_matrix = glm::translate(model_matrix, this->source_pos);
+	//model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
+	////rewrite the triangles martics in buffer
+	////glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(water_vertices), water_vertices);
+	//glBufferSubData(GL_ARRAY_BUFFER, 0, 5400 * 3 * sizeof(GLfloat), water_vertices);
+	//this->water_shader->Use();
 
 
-	glUniformMatrix4fv(
-		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "u_color"),
-		1,
-		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	//this->texture->bind(0);
-	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
-	glBindVertexArray(this->water_wave->vao);
-	//glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "u_color"),
+	//	1,
+	//	&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	////this->texture->bind(0);
+	////glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	//glBindVertexArray(this->water_wave->vao);
+	////glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
+	//glBindVertexArray(0);
 
 	//glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 	//unbind VAO
