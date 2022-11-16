@@ -393,8 +393,8 @@ void TrainView::draw()
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f };
-			GLuint element[1800*4];
-			for (int i = 0; i < 1800*4; ++i) {element[i] = i;}
+			GLuint element[1800*3];
+			for (int i = 0; i < 1800*3; ++i) {element[i] = i;}
 
 			this->water_wave = new VAO; 
 			this->water_wave->element_amount = sizeof(element) / sizeof(GLuint);
@@ -412,6 +412,7 @@ void TrainView::draw()
 
 			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_DYNAMIC_DRAW);
+			//glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), water_vertices, GL_DYNAMIC_DRAW);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(0);
 
@@ -427,10 +428,27 @@ void TrainView::draw()
 			//glEnableVertexAttribArray(1);
 
 			// Texture Coordinate attribute
-			/*glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[2]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_texture_coordinate), wall_texture_coordinate, GL_STATIC_DRAW);
+			GLfloat water_wave_coordinate[5400*2] = { 0, 0, 0, 1, 1, 0 };
+			for (int i = 0; i < 900; ++i) {
+				water_wave_coordinate[i * 12 + 0] = 0;
+				water_wave_coordinate[i * 12 + 1] = 0;
+				water_wave_coordinate[i * 12 + 2] = 0;
+				water_wave_coordinate[i * 12 + 3] = 1;
+				water_wave_coordinate[i * 12 + 4] = 1;
+				water_wave_coordinate[i * 12 + 5] = 0;
+
+				water_wave_coordinate[i * 12 + 6] = 0;
+				water_wave_coordinate[i * 12 + 7] = 0;
+				water_wave_coordinate[i * 12 + 8] = 0;
+				water_wave_coordinate[i * 12 + 9] = 1;
+				water_wave_coordinate[i * 12 + 10] = 1;
+				water_wave_coordinate[i * 12 + 11] = 1;
+
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave_coordinate), water_wave_coordinate, GL_STATIC_DRAW);
 			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
-			glEnableVertexAttribArray(2);*/
+			glEnableVertexAttribArray(2);
 
 			//Element attribute
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->water_wave->ebo);
