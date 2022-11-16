@@ -15,15 +15,15 @@ out V_OUT
 {
    vec3 position;
    vec3 normal;
-   vec2 texture_coordinate;
+   vec3 texture_coordinate;
    vec3 color;
 } v_out;
 
 void main()
 {
-    gl_Position = u_projection* u_model * vec4(position, 1.0f);
+    gl_Position = u_projection* u_view * vec4(position, 1.0f);
     v_out.position = vec3(u_model * vec4(position, 1.0f));
     v_out.normal = mat3(transpose(inverse(u_model))) * normal;
-    v_out.texture_coordinate = vec2(texture_coordinate.x, 1.0f - texture_coordinate.y);
+    v_out.texture_coordinate = position;
     v_out.color = color;
 }

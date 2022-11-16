@@ -34,7 +34,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <GL/glu.h>
-#include <stb_image.h>
+
 #include "TrainView.H"
 #include "TrainWindow.H"
 #include "Utilities/3DUtils.H"
@@ -173,35 +173,7 @@ int TrainView::handle(int event)
 
 	return Fl_Gl_Window::handle(event);
 }
-unsigned int loadCubemap(vector<std::string> faces)
-{
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-	int width, height, nrComponents;
-	for (unsigned int i = 0; i < faces.size(); i++)
-	{
-		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
-		if (data)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			stbi_image_free(data);
-		}
-		else
-		{
-			std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-			stbi_image_free(data);
-		}
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	return textureID;
-}
 //************************************************************************
 //
 // * this is the code that actually draws the window
@@ -432,7 +404,6 @@ void TrainView::draw()
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(0);
 
-
 			//Element attribute
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->skybox->ebo);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
@@ -566,10 +537,19 @@ void TrainView::draw()
 			//glBindVertexArray(0);
 
 		}
+		vector<string> skybox_images_path = {
+			PROJECT_DIR "/Images/skybox/back.jpg", 
+			PROJECT_DIR "/Images/skybox/bottom.jpg",
+			PROJECT_DIR "/Images/skybox/front.jpg",
+			PROJECT_DIR "/Images/skybox/left.jpg",
+			PROJECT_DIR "/Images/skybox/right.jpg",
+			PROJECT_DIR "/Images/skybox/top.jpg"
+		};
 
 		if (!this->texture)
 			this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
-
+		if (!this->skybox_texture)
+			this->skybox_texture = new skybox_t(skybox_images_path);
 		if (!this->device){
 			//Tutorial: https://ffainelli.github.io/openal-example/
 			this->device = alcOpenDevice(NULL);
@@ -712,6 +692,45 @@ void TrainView::draw()
 	// now draw the ground plane
 	//*********************************************************************
 	// set to opengl fixed pipeline(use opengl 1.x draw function)
+
+	glm::mat4 model_matrix = glm::mat4();
+	model_matrix = glm::translate(model_matrix, this->source_pos);
+	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
+
+	glUseProgram(0);
+
+	glDisable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	setUBO();
+	glBindBufferRange(
+		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
+
+	//bind shader
+
+	this->skybox_shader->Use();
+
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(this->skybox_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	glUniform3fv(
+		glGetUniformLocation(this->skybox_shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	/*this->texture->bind(0);
+	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);*/
+
+	this->skybox_texture->bind(0);
+	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
+
+	//bind VAO
+	glBindVertexArray(this->skybox->vao);
+	glDrawElements(GL_TRIANGLES, this->skybox->element_amount, GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS); // set depth function back to default
+	glUseProgram(0);
+
+	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
 
 	setupFloor();
@@ -735,42 +754,9 @@ void TrainView::draw()
 		unsetupShadows();
 	}
 
-	glm::mat4 model_matrix = glm::mat4();
-	model_matrix = glm::translate(model_matrix, this->source_pos);
-	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
 
 
 
-
-	glDisable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	setUBO();
-	glBindBufferRange(
-		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
-
-	//bind shader
-
-	this->skybox_shader->Use();
-
-
-	glUniformMatrix4fv(
-		glGetUniformLocation(this->skybox_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	glUniform3fv(
-		glGetUniformLocation(this->skybox_shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(
-		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	this->texture->bind(0);
-	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
-
-	//bind VAO
-	glBindVertexArray(this->skybox->vao);
-	glDrawElements(GL_TRIANGLES, this->skybox->element_amount, GL_UNSIGNED_INT, 0);
-
-	glBindVertexArray(0);
-	glDepthFunc(GL_LESS); // set depth function back to default
-	glUseProgram(0);
-
-	glEnable(GL_DEPTH_TEST);
 
 
 
