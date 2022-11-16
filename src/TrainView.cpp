@@ -34,7 +34,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <GL/glu.h>
-
+#include <stb_image.h>
 #include "TrainView.H"
 #include "TrainWindow.H"
 #include "Utilities/3DUtils.H"
@@ -173,7 +173,35 @@ int TrainView::handle(int event)
 
 	return Fl_Gl_Window::handle(event);
 }
+unsigned int loadCubemap(vector<std::string> faces)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
+	int width, height, nrComponents;
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
+}
 //************************************************************************
 //
 // * this is the code that actually draws the window
@@ -209,6 +237,14 @@ void TrainView::draw()
 				nullptr, nullptr, nullptr,
 				PROJECT_DIR "/src/shaders/water.frag");
 		}
+		if (!this->skybox_shader) {
+			this->skybox_shader = new
+				Shader(
+					PROJECT_DIR "/src/shaders/skybox.vert",
+					nullptr, nullptr, nullptr,
+					PROJECT_DIR "/src/shaders/skybox.frag");
+		}
+
 		if (!this->commom_matrices)
 			this->commom_matrices = new UBO();
 			this->commom_matrices->size = 2 * sizeof(glm::mat4);
@@ -334,7 +370,76 @@ void TrainView::draw()
 			// Unbind VAO
 			glBindVertexArray(0);
 		}
+		if (!this->skybox) {
+			GLuint element[36];
+			for (int i = 0; i < 36; ++i) { element[i] = i; }
+			GLfloat skyboxVertices[] = {
+				// positions          
+				-1.0f,  1.0f, -1.0f,
+				-1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
 
+				-1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				-1.0f,  1.0f, -1.0f,
+				 1.0f,  1.0f, -1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				 1.0f, -1.0f,  1.0f
+			};
+			//for(int i= 0; i<36*3; ++i){
+			//	skyboxVertices[i] *= 10;
+			//}
+			this->skybox = new VAO;
+			this->skybox->element_amount = sizeof(element) / sizeof(GLuint);
+			glGenVertexArrays(1, &this->skybox->vao);
+			glGenBuffers(1, this->skybox->vbo);
+			glGenBuffers(1, &this->skybox->ebo);
+			glBindVertexArray(this->skybox->vao);
+
+			glBindBuffer(GL_ARRAY_BUFFER, this->skybox->vbo[0]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+			glEnableVertexAttribArray(0);
+
+
+			//Element attribute
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->skybox->ebo);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
+
+			// Unbind VAO
+			glBindVertexArray(0);
+		}
 		if (!this->water_wave) {
 			float edge_length = 20.0f;
 			float divide_n = 20.0f;
@@ -393,6 +498,7 @@ void TrainView::draw()
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f };
+
 			GLuint element[1800*3];
 			for (int i = 0; i < 1800*3; ++i) {element[i] = i;}
 
@@ -445,10 +551,10 @@ void TrainView::draw()
 				water_wave_coordinate[i * 12 + 11] = 1;
 
 			}
-			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave_coordinate), water_wave_coordinate, GL_STATIC_DRAW);
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
-			glEnableVertexAttribArray(2);
+			//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
+			//glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave_coordinate), water_wave_coordinate, GL_STATIC_DRAW);
+			//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
+			//glEnableVertexAttribArray(2);
 
 			//Element attribute
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->water_wave->ebo);
@@ -629,6 +735,45 @@ void TrainView::draw()
 		unsetupShadows();
 	}
 
+	glm::mat4 model_matrix = glm::mat4();
+	model_matrix = glm::translate(model_matrix, this->source_pos);
+	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
+
+
+
+
+	glDisable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	setUBO();
+	glBindBufferRange(
+		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
+
+	//bind shader
+
+	this->skybox_shader->Use();
+
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(this->skybox_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	glUniform3fv(
+		glGetUniformLocation(this->skybox_shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	this->texture->bind(0);
+	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
+
+	//bind VAO
+	glBindVertexArray(this->skybox->vao);
+	glDrawElements(GL_TRIANGLES, this->skybox->element_amount, GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS); // set depth function back to default
+	glUseProgram(0);
+
+	glEnable(GL_DEPTH_TEST);
+
+
+
 	setUBO();
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
@@ -636,9 +781,7 @@ void TrainView::draw()
 	//bind shader
 	this->shader->Use();
 
-	glm::mat4 model_matrix = glm::mat4();
-	model_matrix = glm::translate(model_matrix, this->source_pos);
-	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
+
 	glUniformMatrix4fv(
 		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
 	glUniform3fv(
@@ -697,6 +840,10 @@ void TrainView::draw()
 
 	//unbind shader(switch to fixed pipeline)
 	glUseProgram(0);
+
+
+
+
 }
 
 //************************************************************************
