@@ -87,6 +87,7 @@ class TrainView : public Fl_Gl_Window
 
 		//set ubo
 		void setUBO();
+		void draw_everything_in_gl1_0();
 	public:
 		unsigned int tick = 0;
 		ArcBallCam		arcball;			// keep an ArcBall for the UI
@@ -104,7 +105,7 @@ class TrainView : public Fl_Gl_Window
 		VAO* water_wave = nullptr;
 		VAO* skybox = nullptr;
 		UBO* commom_matrices= nullptr;
-
+		
 		//OpenAL
 		glm::vec3 source_pos;
 		glm::vec3 listener_pos;

@@ -174,6 +174,86 @@ int TrainView::handle(int event)
 	return Fl_Gl_Window::handle(event);
 }
 
+
+void TrainView::draw_everything_in_gl1_0() {
+
+	// Set up the view port		
+	glViewport(0, 0, w(), h());
+
+	// clear the window, be sure to clear the Z-Buffer too
+	glClearColor(0, 0, .3f, 0);		// background should be blue
+
+	// we need to clear out the stencil buffer since we'll use
+	// it for shadows
+	glClearStencil(0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glEnable(GL_DEPTH);
+
+	// Blayne prefers GL_DIFFUSE
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+	// prepare for projection
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	setProjection();		// put the code to set up matrices here
+
+	//######################################################################
+	// TODO: 
+	// you might want to set the lighting up differently. if you do, 
+	// we need to set up the lights AFTER setting up the projection
+	//######################################################################
+	// enable the lighting
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	// top view only needs one light
+	if (tw->topCam->value()) {
+		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHT2);
+	}
+	else {
+		glEnable(GL_LIGHT1);
+		glEnable(GL_LIGHT2);
+	}
+
+	//*********************************************************************
+	//
+	// * set the light parameters
+	//
+	//**********************************************************************
+	GLfloat lightPosition1[] = { 0,1,1,0 }; // {50, 200.0, 50, 1.0};
+	GLfloat lightPosition2[] = { 1, 0, 0, 0 };
+	GLfloat lightPosition3[] = { 0, -1, 0, 0 };
+	GLfloat yellowLight[] = { 0.5f, 0.5f, .1f, 1.0 };
+	GLfloat whiteLight[] = { 1.0f, 1.0f, 1.0f, 1.0 };
+	GLfloat blueLight[] = { .1f,.1f,.3f,1.0 };
+	GLfloat grayLight[] = { .3f, .3f, .3f, 1.0 };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, grayLight);
+
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, yellowLight);
+
+	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
+
+	// set linstener position 
+	if (selectedCube >= 0)
+		alListener3f(AL_POSITION,
+			m_pTrack->points[selectedCube].pos.x,
+			m_pTrack->points[selectedCube].pos.y,
+			m_pTrack->points[selectedCube].pos.z);
+	else
+		alListener3f(AL_POSITION,
+			this->source_pos.x,
+			this->source_pos.y,
+			this->source_pos.z);
+}
 //************************************************************************
 //
 // * this is the code that actually draws the window
@@ -195,6 +275,7 @@ void TrainView::draw()
 	if (gladLoadGL())
 	{
 		
+		draw_everything_in_gl1_0();
 		//initiailize VAO, VBO, Shader...
 		if (!this->shader)
 			this->shader = new
@@ -611,81 +692,7 @@ void TrainView::draw()
 	else
 		throw std::runtime_error("Could not initialize GLAD!");
 
-	// Set up the view port		
-	glViewport(0,0,w(),h());
-
-	// clear the window, be sure to clear the Z-Buffer too
-	glClearColor(0,0,.3f,0);		// background should be blue
-
-	// we need to clear out the stencil buffer since we'll use
-	// it for shadows
-	glClearStencil(0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glEnable(GL_DEPTH);
-
-	// Blayne prefers GL_DIFFUSE
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-	// prepare for projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	setProjection();		// put the code to set up matrices here
-
-	//######################################################################
-	// TODO: 
-	// you might want to set the lighting up differently. if you do, 
-	// we need to set up the lights AFTER setting up the projection
-	//######################################################################
-	// enable the lighting
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-
-	// top view only needs one light
-	if (tw->topCam->value()) {
-		glDisable(GL_LIGHT1);
-		glDisable(GL_LIGHT2);
-	} else {
-		glEnable(GL_LIGHT1);
-		glEnable(GL_LIGHT2);
-	}
-
-	//*********************************************************************
-	//
-	// * set the light parameters
-	//
-	//**********************************************************************
-	GLfloat lightPosition1[]	= {0,1,1,0}; // {50, 200.0, 50, 1.0};
-	GLfloat lightPosition2[]	= {1, 0, 0, 0};
-	GLfloat lightPosition3[]	= {0, -1, 0, 0};
-	GLfloat yellowLight[]		= {0.5f, 0.5f, .1f, 1.0};
-	GLfloat whiteLight[]			= {1.0f, 1.0f, 1.0f, 1.0};
-	GLfloat blueLight[]			= {.1f,.1f,.3f,1.0};
-	GLfloat grayLight[]			= {.3f, .3f, .3f, 1.0};
-
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, grayLight);
-
-	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, yellowLight);
-
-	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
-
-	// set linstener position 
-	if(selectedCube >= 0)
-		alListener3f(AL_POSITION, 
-			m_pTrack->points[selectedCube].pos.x,
-			m_pTrack->points[selectedCube].pos.y,
-			m_pTrack->points[selectedCube].pos.z);
-	else
-		alListener3f(AL_POSITION, 
-			this->source_pos.x, 
-			this->source_pos.y,
-			this->source_pos.z);
+	
 
 
 	//*********************************************************************
