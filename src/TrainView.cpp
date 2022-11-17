@@ -44,7 +44,7 @@
 #ifdef EXAMPLE_SOLUTION
 #	include "TrainExample/TrainExample.H"
 #endif
-
+	
 
 //************************************************************************
 //
@@ -538,12 +538,12 @@ void TrainView::draw()
 
 		}
 		vector<string> skybox_images_path = {
-			PROJECT_DIR "/Images/skybox/back.jpg", 
+			PROJECT_DIR "/Images/skybox/right.jpg", 
+			PROJECT_DIR "/Images/skybox/left.jpg",
+			PROJECT_DIR "/Images/skybox/top.jpg",
 			PROJECT_DIR "/Images/skybox/bottom.jpg",
 			PROJECT_DIR "/Images/skybox/front.jpg",
-			PROJECT_DIR "/Images/skybox/left.jpg",
-			PROJECT_DIR "/Images/skybox/right.jpg",
-			PROJECT_DIR "/Images/skybox/top.jpg"
+			PROJECT_DIR "/Images/skybox/back.jpg"
 		};
 
 		if (!this->texture)
@@ -611,7 +611,7 @@ void TrainView::draw()
 	else
 		throw std::runtime_error("Could not initialize GLAD!");
 
-	// Set up the view port
+	// Set up the view port		
 	glViewport(0,0,w(),h());
 
 	// clear the window, be sure to clear the Z-Buffer too
@@ -701,11 +701,19 @@ void TrainView::draw()
 
 	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-	setUBO();
+	setUBO();		
+	HMatrix modelMatrix; //你說這裡? 這樣應該ok 
+	arcball.getMatrix(modelMatrix); //度 修好了 機車的z=-250 你這裡get這個 到底是哪裡的
+	//glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]); //這裡乘過了阿:(這裡tranf過了 
+	glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &modelMatrix);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
 
 	//bind shader
+
 
 	this->skybox_shader->Use();
 
@@ -718,7 +726,7 @@ void TrainView::draw()
 		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
 	/*this->texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);*/
-
+	
 	this->skybox_texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
 

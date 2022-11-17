@@ -20,8 +20,9 @@ out V_OUT
 } v_out;
 
 void main()
-{
+{   
     gl_Position = u_projection* u_view * vec4(position, 1.0f);
+    //我還是覺得 model要拔掉
     v_out.position = vec3(u_model * vec4(position, 1.0f));
     v_out.normal = mat3(transpose(inverse(u_model))) * normal;
     v_out.texture_coordinate = position;
