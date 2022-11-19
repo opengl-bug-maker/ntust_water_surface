@@ -36,6 +36,7 @@ class TrainWindow;
 class CTrack;
 
 
+
 //#######################################################################
 // TODO
 // You might change the TrainView in order to add different objects to
@@ -59,6 +60,9 @@ class CTrack;
 
 // this uses the old ArcBall Code
 #include "Utilities/ArcBallCam.H"
+
+#include "gpu_object.h"
+#include "wall.h"
 
 class TrainView : public Fl_Gl_Window
 {
@@ -113,6 +117,8 @@ class TrainView : public Fl_Gl_Window
 		ALCcontext* context = nullptr;
 		ALuint source;
 		ALuint buffer;
+
+		wall_t wall;
 
 		//water simulation
 		water_simulation water_simulator = water_simulation(9, nullptr);

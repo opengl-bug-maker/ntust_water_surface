@@ -1,26 +1,26 @@
-/************************************************************************
-     File:        TrainView.cpp
+ï»¿/************************************************************************
+	 File:        TrainView.cpp
 
-     Author:     
-                  Michael Gleicher, gleicher@cs.wisc.edu
+	 Author:
+				  Michael Gleicher, gleicher@cs.wisc.edu
 
-     Modifier
-                  Yu-Chi Lai, yu-chi@cs.wisc.edu
-     
-     Comment:     
-						The TrainView is the window that actually shows the 
+	 Modifier
+				  Yu-Chi Lai, yu-chi@cs.wisc.edu
+
+	 Comment:
+						The TrainView is the window that actually shows the
 						train. Its a
-						GL display canvas (Fl_Gl_Window).  It is held within 
+						GL display canvas (Fl_Gl_Window).  It is held within
 						a TrainWindow
-						that is the outer window with all the widgets. 
-						The TrainView needs 
-						to be aware of the window - since it might need to 
+						that is the outer window with all the widgets.
+						The TrainView needs
+						to be aware of the window - since it might need to
 						check the widgets to see how to draw
 
-	  Note:        we need to have pointers to this, but maybe not know 
+	  Note:        we need to have pointers to this, but maybe not know
 						about it (beware circular references)
 
-     Platform:    Visio Studio.Net 2003/2005
+	 Platform:    Visio Studio.Net 2003/2005
 
 *************************************************************************/
 
@@ -44,18 +44,18 @@
 #ifdef EXAMPLE_SOLUTION
 #	include "TrainExample/TrainExample.H"
 #endif
-	
+
 
 //************************************************************************
 //
 // * Constructor to set up the GL window
 //========================================================================
 TrainView::
-TrainView(int x, int y, int w, int h, const char* l) 
-	: Fl_Gl_Window(x,y,w,h,l)
-//========================================================================
+TrainView(int x, int y, int w, int h, const char* l)
+	: Fl_Gl_Window(x, y, w, h, l)
+	//========================================================================
 {
-	mode( FL_RGB|FL_ALPHA|FL_DOUBLE | FL_STENCIL );
+	mode(FL_RGB | FL_ALPHA | FL_DOUBLE | FL_STENCIL);
 	water_simulator = water_simulation(30, nullptr);
 	// water_simulator.surfaces[5][5].height = 3;
 	//this->water_wave = new VAO;
@@ -91,169 +91,89 @@ int TrainView::handle(int event)
 	// then we're done
 	// note: the arcball only gets the event if we're in world view
 	if (tw->worldCam->value())
-		if (arcball.handle(event)) 
+		if (arcball.handle(event))
 			return 1;
 
 	// remember what button was used
 	static int last_push;
 
-	switch(event) {
+	switch (event) {
 		// Mouse button being pushed event
-		case FL_PUSH:
-			last_push = Fl::event_button();
-			// if the left button be pushed is left mouse button
-			if (last_push == FL_LEFT_MOUSE  ) {
-				doPick();
-				damage(1);
-				return 1;
-			};
-			break;
-
-	   // Mouse button release event
-		case FL_RELEASE: // button release
+	case FL_PUSH:
+		last_push = Fl::event_button();
+		// if the left button be pushed is left mouse button
+		if (last_push == FL_LEFT_MOUSE) {
+			doPick();
 			damage(1);
-			last_push = 0;
 			return 1;
+		};
+		break;
+
+		// Mouse button release event
+	case FL_RELEASE: // button release
+		damage(1);
+		last_push = 0;
+		return 1;
 
 		// Mouse button drag event
-		case FL_DRAG:
+	case FL_DRAG:
 
-			// Compute the new control point position
-			if ((last_push == FL_LEFT_MOUSE) && (selectedCube >= 0)) {
-				ControlPoint* cp = &m_pTrack->points[selectedCube];
+		// Compute the new control point position
+		if ((last_push == FL_LEFT_MOUSE) && (selectedCube >= 0)) {
+			ControlPoint* cp = &m_pTrack->points[selectedCube];
 
-				double r1x, r1y, r1z, r2x, r2y, r2z;
-				getMouseLine(r1x, r1y, r1z, r2x, r2y, r2z);
+			double r1x, r1y, r1z, r2x, r2y, r2z;
+			getMouseLine(r1x, r1y, r1z, r2x, r2y, r2z);
 
-				double rx, ry, rz;
-				mousePoleGo(r1x, r1y, r1z, r2x, r2y, r2z, 
-								static_cast<double>(cp->pos.x), 
-								static_cast<double>(cp->pos.y),
-								static_cast<double>(cp->pos.z),
-								rx, ry, rz,
-								(Fl::event_state() & FL_CTRL) != 0);
+			double rx, ry, rz;
+			mousePoleGo(r1x, r1y, r1z, r2x, r2y, r2z,
+				static_cast<double>(cp->pos.x),
+				static_cast<double>(cp->pos.y),
+				static_cast<double>(cp->pos.z),
+				rx, ry, rz,
+				(Fl::event_state() & FL_CTRL) != 0);
 
-				cp->pos.x = (float) rx;
-				cp->pos.y = (float) ry;
-				cp->pos.z = (float) rz;
-				damage(1);
-			}
-			break;
+			cp->pos.x = (float)rx;
+			cp->pos.y = (float)ry;
+			cp->pos.z = (float)rz;
+			damage(1);
+		}
+		break;
 
 		// in order to get keyboard events, we need to accept focus
-		case FL_FOCUS:
-			return 1;
+	case FL_FOCUS:
+		return 1;
 
 		// every time the mouse enters this window, aggressively take focus
-		case FL_ENTER:	
-			focus(this);
-			break;
+	case FL_ENTER:
+		focus(this);
+		break;
 
-		case FL_KEYBOARD:
-		 		int k = Fl::event_key();
-				int ks = Fl::event_state();
-				if (k == 'p') {
-					// Print out the selected control point information
-					if (selectedCube >= 0) 
-						printf("Selected(%d) (%g %g %g) (%g %g %g)\n",
-								 selectedCube,
-								 m_pTrack->points[selectedCube].pos.x,
-								 m_pTrack->points[selectedCube].pos.y,
-								 m_pTrack->points[selectedCube].pos.z,
-								 m_pTrack->points[selectedCube].orient.x,
-								 m_pTrack->points[selectedCube].orient.y,
-								 m_pTrack->points[selectedCube].orient.z);
-					else
-						printf("Nothing Selected\n");
+	case FL_KEYBOARD:
+		int k = Fl::event_key();
+		int ks = Fl::event_state();
+		if (k == 'p') {
+			// Print out the selected control point information
+			if (selectedCube >= 0)
+				printf("Selected(%d) (%g %g %g) (%g %g %g)\n",
+					selectedCube,
+					m_pTrack->points[selectedCube].pos.x,
+					m_pTrack->points[selectedCube].pos.y,
+					m_pTrack->points[selectedCube].pos.z,
+					m_pTrack->points[selectedCube].orient.x,
+					m_pTrack->points[selectedCube].orient.y,
+					m_pTrack->points[selectedCube].orient.z);
+			else
+				printf("Nothing Selected\n");
 
-					return 1;
-				};
-				break;
+			return 1;
+		};
+		break;
 	}
 
 	return Fl_Gl_Window::handle(event);
 }
 
-
-void TrainView::draw_everything_in_gl1_0() {
-
-	// Set up the view port		
-	glViewport(0, 0, w(), h());
-
-	// clear the window, be sure to clear the Z-Buffer too
-	glClearColor(0, 0, .3f, 0);		// background should be blue
-
-	// we need to clear out the stencil buffer since we'll use
-	// it for shadows
-	glClearStencil(0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glEnable(GL_DEPTH);
-
-	// Blayne prefers GL_DIFFUSE
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-	// prepare for projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	setProjection();		// put the code to set up matrices here
-
-	//######################################################################
-	// TODO: 
-	// you might want to set the lighting up differently. if you do, 
-	// we need to set up the lights AFTER setting up the projection
-	//######################################################################
-	// enable the lighting
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-
-	// top view only needs one light
-	if (tw->topCam->value()) {
-		glDisable(GL_LIGHT1);
-		glDisable(GL_LIGHT2);
-	}
-	else {
-		glEnable(GL_LIGHT1);
-		glEnable(GL_LIGHT2);
-	}
-
-	//*********************************************************************
-	//
-	// * set the light parameters
-	//
-	//**********************************************************************
-	GLfloat lightPosition1[] = { 0,1,1,0 }; // {50, 200.0, 50, 1.0};
-	GLfloat lightPosition2[] = { 1, 0, 0, 0 };
-	GLfloat lightPosition3[] = { 0, -1, 0, 0 };
-	GLfloat yellowLight[] = { 0.5f, 0.5f, .1f, 1.0 };
-	GLfloat whiteLight[] = { 1.0f, 1.0f, 1.0f, 1.0 };
-	GLfloat blueLight[] = { .1f,.1f,.3f,1.0 };
-	GLfloat grayLight[] = { .3f, .3f, .3f, 1.0 };
-
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, grayLight);
-
-	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, yellowLight);
-
-	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
-
-	// set linstener position 
-	if (selectedCube >= 0)
-		alListener3f(AL_POSITION,
-			m_pTrack->points[selectedCube].pos.x,
-			m_pTrack->points[selectedCube].pos.y,
-			m_pTrack->points[selectedCube].pos.z);
-	else
-		alListener3f(AL_POSITION,
-			this->source_pos.x,
-			this->source_pos.y,
-			this->source_pos.z);
-}
 //************************************************************************
 //
 // * this is the code that actually draws the window
@@ -269,26 +189,25 @@ void TrainView::draw()
 	//
 	//**********************************************************************
 	//initialized glad
-	
-	
+
+
 	vector<triangle_t> triangles;
 	if (gladLoadGL())
 	{
-		
-		draw_everything_in_gl1_0();
+
 		//initiailize VAO, VBO, Shader...
 		if (!this->shader)
 			this->shader = new
 			Shader(
 				PROJECT_DIR "/src/shaders/simple.vert",
-				nullptr, nullptr, nullptr, 
+				nullptr, nullptr, nullptr,
 				PROJECT_DIR "/src/shaders/simple.frag");
 		if (!this->water_shader) {
 			this->water_shader = new
-			Shader(
-				PROJECT_DIR "/src/shaders/water.vert",
-				nullptr, nullptr, nullptr,
-				PROJECT_DIR "/src/shaders/water.frag");
+				Shader(
+					PROJECT_DIR "/src/shaders/water.vert",
+					nullptr, nullptr, nullptr,
+					PROJECT_DIR "/src/shaders/water.frag");
 		}
 		if (!this->skybox_shader) {
 			this->skybox_shader = new
@@ -300,11 +219,11 @@ void TrainView::draw()
 
 		if (!this->commom_matrices)
 			this->commom_matrices = new UBO();
-			this->commom_matrices->size = 2 * sizeof(glm::mat4);
-			glGenBuffers(1, &this->commom_matrices->ubo);
-			glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
-			glBufferData(GL_UNIFORM_BUFFER, this->commom_matrices->size, NULL, GL_STATIC_DRAW);
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		this->commom_matrices->size = 2 * sizeof(glm::mat4);
+		glGenBuffers(1, &this->commom_matrices->ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
+		glBufferData(GL_UNIFORM_BUFFER, this->commom_matrices->size, NULL, GL_STATIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 		if (!this->plane) {
 			GLfloat wall_vertices[] = {
@@ -316,7 +235,7 @@ void TrainView::draw()
 				-10.0f, 15.0f, 10.0f,  //the second wall
 				-10.0f, 15.0f, -10.0f,
 				-10.0f, -0.5f, -10.0f,
-				-10.0f, -0.5f, 10.0f, 
+				-10.0f, -0.5f, 10.0f,
 
 				10.0f, -0.5f, 10.0f,  //floor
 				10.0f, -0.5f, -10.0f,
@@ -337,8 +256,8 @@ void TrainView::draw()
 			//float wall_color_sample[3] = { 0.4, 0.7, 0.8 };
 			static GLfloat wall_color[60];
 			for (int i = 0; i < 20; ++i) {
-				for(int j = 0; j<3; ++j)
-				wall_color[i*3+j] = wall_color_sample[j];
+				for (int j = 0; j < 3; ++j)
+					wall_color[i * 3 + j] = wall_color_sample[j];
 			}
 			GLfloat  normal[] = {
 				0.0f, 1.0f, 0.0f,
@@ -378,9 +297,9 @@ void TrainView::draw()
 				1.0f, 1.0f
 			};
 			GLuint element[12];
-			for (int i = 0; i < 12; ++i) {element[i] = i;}
+			for (int i = 0; i < 12; ++i) { element[i] = i; }
 
-			this->plane = new VAO; 
+			this->plane = new VAO;
 			this->plane->element_amount = sizeof(element) / sizeof(GLuint);
 			glGenVertexArrays(1, &this->plane->vao);
 			glGenBuffers(3, this->plane->vbo);
@@ -396,12 +315,12 @@ void TrainView::draw()
 
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_color), wall_color, GL_STATIC_DRAW);
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(3);
 
 			////Normal attribute
@@ -413,7 +332,7 @@ void TrainView::draw()
 			// Texture Coordinate attribute
 			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[2]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_texture_coordinate), wall_texture_coordinate, GL_STATIC_DRAW);
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
 			glEnableVertexAttribArray(2);
 
 			//Element attribute
@@ -497,7 +416,7 @@ void TrainView::draw()
 			float divide_n = 20.0f;
 			float stride = edge_length / divide_n;
 			float amptitude = 3;
-			
+
 			//vector<triangle_t> triangles;
 			//water_simulator.get_matrix(triangles);
 			//for (int i = 0; i < edge_length; i += stride) {
@@ -524,7 +443,7 @@ void TrainView::draw()
 			//		triangles.push_back(upper_right);
 			//	}
 			//}
-			
+
 			water_simulator.get_matrix(triangles);
 			//GLfloat* water_vertices = new GLfloat[5400*3];
 			//water_simulator.get_matrix(triangles);
@@ -538,12 +457,12 @@ void TrainView::draw()
 			//		water_vertices[water_vertices_n++] = vertice.z;
 			//	}
 			//}
-			
+
 			float water_color_sample[3] = { 0.4, 0.7, 0.8 };
 			static GLfloat water_color[60];
 			for (int i = 0; i < 20; ++i) {
-				for(int j = 0; j<3; ++j)
-				water_color[i*3+j] = water_color_sample[j];
+				for (int j = 0; j < 3; ++j)
+					water_color[i * 3 + j] = water_color_sample[j];
 			}
 			GLfloat  normal[] = {
 				0.0f, 1.0f, 0.0f,
@@ -551,10 +470,10 @@ void TrainView::draw()
 				0.0f, 1.0f, 0.0f,
 				0.0f, 1.0f, 0.0f };
 
-			GLuint element[1800*3];
-			for (int i = 0; i < 1800*3; ++i) {element[i] = i;}
+			GLuint element[1800 * 3];
+			for (int i = 0; i < 1800 * 3; ++i) { element[i] = i; }
 
-			this->water_wave = new VAO; 
+			this->water_wave = new VAO;
 			this->water_wave->element_amount = sizeof(element) / sizeof(GLuint);
 			glGenVertexArrays(1, &this->water_wave->vao);
 			glGenBuffers(3, this->water_wave->vbo);
@@ -571,7 +490,7 @@ void TrainView::draw()
 			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_DYNAMIC_DRAW);
 			//glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), water_vertices, GL_DYNAMIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
 			glEnableVertexAttribArray(0);
 
 			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
@@ -586,7 +505,7 @@ void TrainView::draw()
 			//glEnableVertexAttribArray(1);
 
 			// Texture Coordinate attribute
-			GLfloat water_wave_coordinate[5400*2] = { 0, 0, 0, 1, 1, 0 };
+			GLfloat water_wave_coordinate[5400 * 2] = { 0, 0, 0, 1, 1, 0 };
 			for (int i = 0; i < 900; ++i) {
 				water_wave_coordinate[i * 12 + 0] = 0;
 				water_wave_coordinate[i * 12 + 1] = 0;
@@ -613,13 +532,13 @@ void TrainView::draw()
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
 
 			// Unbind VAO
-			
+
 			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
 			//glBindVertexArray(0);
 
 		}
 		vector<string> skybox_images_path = {
-			PROJECT_DIR "/Images/skybox/right.jpg", 
+			PROJECT_DIR "/Images/skybox/right.jpg",
 			PROJECT_DIR "/Images/skybox/left.jpg",
 			PROJECT_DIR "/Images/skybox/top.jpg",
 			PROJECT_DIR "/Images/skybox/bottom.jpg",
@@ -631,7 +550,7 @@ void TrainView::draw()
 			this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 		if (!this->skybox_texture)
 			this->skybox_texture = new skybox_t(skybox_images_path);
-		if (!this->device){
+		if (!this->device) {
 			//Tutorial: https://ffainelli.github.io/openal-example/
 			this->device = alcOpenDevice(NULL);
 			if (!this->device)
@@ -692,7 +611,82 @@ void TrainView::draw()
 	else
 		throw std::runtime_error("Could not initialize GLAD!");
 
-	
+	// Set up the view port		
+	glViewport(0, 0, w(), h());
+
+	// clear the window, be sure to clear the Z-Buffer too
+	glClearColor(0, 0, .3f, 0);		// background should be blue
+
+	// we need to clear out the stencil buffer since we'll use
+	// it for shadows
+	glClearStencil(0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glEnable(GL_DEPTH);
+
+	// Blayne prefers GL_DIFFUSE
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+	// prepare for projection
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	setProjection();		// put the code to set up matrices here
+
+	//######################################################################
+	// TODO: 
+	// you might want to set the lighting up differently. if you do, 
+	// we need to set up the lights AFTER setting up the projection
+	//######################################################################
+	// enable the lighting
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	// top view only needs one light
+	if (tw->topCam->value()) {
+		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHT2);
+	}
+	else {
+		glEnable(GL_LIGHT1);
+		glEnable(GL_LIGHT2);
+	}
+
+	//*********************************************************************
+	//
+	// * set the light parameters
+	//
+	//**********************************************************************
+	GLfloat lightPosition1[] = { 0,1,1,0 }; // {50, 200.0, 50, 1.0};
+	GLfloat lightPosition2[] = { 1, 0, 0, 0 };
+	GLfloat lightPosition3[] = { 0, -1, 0, 0 };
+	GLfloat yellowLight[] = { 0.5f, 0.5f, .1f, 1.0 };
+	GLfloat whiteLight[] = { 1.0f, 1.0f, 1.0f, 1.0 };
+	GLfloat blueLight[] = { .1f,.1f,.3f,1.0 };
+	GLfloat grayLight[] = { .3f, .3f, .3f, 1.0 };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, grayLight);
+
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, yellowLight);
+
+	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
+
+	// set linstener position 
+	if (selectedCube >= 0)
+		alListener3f(AL_POSITION,
+			m_pTrack->points[selectedCube].pos.x,
+			m_pTrack->points[selectedCube].pos.y,
+			m_pTrack->points[selectedCube].pos.z);
+	else
+		alListener3f(AL_POSITION,
+			this->source_pos.x,
+			this->source_pos.y,
+			this->source_pos.z);
 
 
 	//*********************************************************************
@@ -708,10 +702,10 @@ void TrainView::draw()
 
 	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-	setUBO();		
-	HMatrix modelMatrix; //§A»¡³o¸Ì? ³o¼ËÀ³¸Óok 
-	arcball.getMatrix(modelMatrix); //«× ­×¦n¤F ¾÷¨®ªºz=-250 §A³o¸Ìget³o­Ó ¨ì©³¬O­þ¸Ìªº
-	//glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]); //³o¸Ì­¼¹L¤Fªü:(³o¸Ìtranf¹L¤F 
+	setUBO();
+	HMatrix modelMatrix;
+	arcball.getMatrix(modelMatrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &modelMatrix);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -733,7 +727,7 @@ void TrainView::draw()
 		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
 	/*this->texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);*/
-	
+
 	this->skybox_texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
 
@@ -791,7 +785,7 @@ void TrainView::draw()
 		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
 	this->texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
-	
+
 	//bind VAO
 	glBindVertexArray(this->plane->vao);
 	glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
@@ -800,8 +794,8 @@ void TrainView::draw()
 
 	glUseProgram(0);
 
-	
-	
+
+
 	setUBO();
 
 	// recalculate the water triangles
@@ -810,7 +804,7 @@ void TrainView::draw()
 	water_simulator.get_matrix(triangles);
 	for (auto& triangle : triangles) { //200
 		for (auto& vertice : triangle.vertices) { //3
-			water_vertices[water_vertices_n++] = vertice.x;	
+			water_vertices[water_vertices_n++] = vertice.x;
 			water_vertices[water_vertices_n++] = vertice.y;
 			water_vertices[water_vertices_n++] = vertice.z;
 		}
@@ -837,7 +831,7 @@ void TrainView::draw()
 
 	//glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 	//unbind VAO
-	
+
 
 	//unbind shader(switch to fixed pipeline)
 	glUseProgram(0);
@@ -869,7 +863,7 @@ setProjection()
 		if (aspect >= 1) {
 			wi = 110;
 			he = wi / aspect;
-		} 
+		}
 		else {
 			he = 110;
 			wi = he * aspect;
@@ -881,8 +875,8 @@ setProjection()
 		glOrtho(-wi, wi, -he, he, 200, -200);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glRotatef(-90,1,0,0);
-	} 
+		glRotatef(-90, 1, 0, 0);
+	}
 	// Or do the train view or other view here
 	//####################################################################
 	// TODO: 
@@ -890,7 +884,7 @@ setProjection()
 	//####################################################################
 	else {
 #ifdef EXAMPLE_SOLUTION
-		trainCamView(this,aspect);
+		trainCamView(this, aspect);
 #endif
 	}
 }
@@ -913,9 +907,9 @@ void TrainView::drawStuff(bool doingShadows)
 	// don't draw the control points if you're driving 
 	// (otherwise you get sea-sick as you drive through them)
 	if (!tw->trainCam->value()) {
-		for(size_t i=0; i<m_pTrack->points.size(); ++i) {
+		for (size_t i = 0; i < m_pTrack->points.size(); ++i) {
 			if (!doingShadows) {
-				if ( ((int) i) != selectedCube)
+				if (((int)i) != selectedCube)
 					glColor3ub(240, 60, 60);
 				else
 					glColor3ub(240, 240, 30);
@@ -963,10 +957,10 @@ doPick()
 {
 	// since we'll need to do some GL stuff so we make this window as 
 	// active window
-	make_current();		
+	make_current();
 
 	// where is the mouse?
-	int mx = Fl::event_x(); 
+	int mx = Fl::event_x();
 	int my = Fl::event_y();
 
 	// get the viewport - most reliable way to turn mouse coords into GL coords
@@ -976,23 +970,23 @@ doPick()
 	// Set up the pick matrix on the stack - remember, FlTk is
 	// upside down!
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity ();
-	gluPickMatrix((double)mx, (double)(viewport[3]-my), 
-						5, 5, viewport);
+	glLoadIdentity();
+	gluPickMatrix((double)mx, (double)(viewport[3] - my),
+		5, 5, viewport);
 
 	// now set up the projection
 	setProjection();
 
 	// now draw the objects - but really only see what we hit
 	GLuint buf[100];
-	glSelectBuffer(100,buf);
+	glSelectBuffer(100, buf);
 	glRenderMode(GL_SELECT);
 	glInitNames();
 	glPushName(0);
 
 	// draw the cubes, loading the names as we go
-	for(size_t i=0; i<m_pTrack->points.size(); ++i) {
-		glLoadName((GLuint) (i+1));
+	for (size_t i = 0; i < m_pTrack->points.size(); ++i) {
+		glLoadName((GLuint)(i + 1));
 		m_pTrack->points[i].draw();
 	}
 
@@ -1003,11 +997,12 @@ doPick()
 		// are multiple objects, you really want to pick the closest
 		// one - see the OpenGL manual 
 		// remember: we load names that are one more than the index
-		selectedCube = buf[3]-1;
-	} else // nothing hit, nothing selected
+		selectedCube = buf[3] - 1;
+	}
+	else // nothing hit, nothing selected
 		selectedCube = -1;
 
-	printf("Selected Cube %d\n",selectedCube);
+	printf("Selected Cube %d\n", selectedCube);
 }
 
 void TrainView::setUBO()
