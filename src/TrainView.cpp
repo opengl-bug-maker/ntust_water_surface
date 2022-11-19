@@ -173,7 +173,9 @@ int TrainView::handle(int event)
 
 	return Fl_Gl_Window::handle(event);
 }
+void  TrainView::draw_everything_in_gl1_0() {
 
+}
 //************************************************************************
 //
 // * this is the code that actually draws the window
@@ -190,12 +192,13 @@ void TrainView::draw()
 	//**********************************************************************
 	//initialized glad
 
-
+	//draw_everything_in_gl1_0();
 	vector<triangle_t> triangles;
 	if (gladLoadGL())
 	{
 
 		//initiailize VAO, VBO, Shader...
+		wall.bind();
 		if (!this->shader)
 			this->shader = new
 			Shader(
@@ -225,123 +228,123 @@ void TrainView::draw()
 		glBufferData(GL_UNIFORM_BUFFER, this->commom_matrices->size, NULL, GL_STATIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		if (!this->plane) {
-			GLfloat wall_vertices[] = {
-				10.0f, 15.0f, -10.0f,  //the first wall
-				-10.0f, 15.0f, -10.0f,
-				-10.0f, -0.5f, -10.0f,
-				10.0f, -0.5f, -10.0f,
+		//if (!this->plane) {
+		//	GLfloat wall_vertices[] = {
+		//		10.0f, 15.0f, -10.0f,  //the first wall
+		//		-10.0f, 15.0f, -10.0f,
+		//		-10.0f, -0.5f, -10.0f,
+		//		10.0f, -0.5f, -10.0f,
 
-				-10.0f, 15.0f, 10.0f,  //the second wall
-				-10.0f, 15.0f, -10.0f,
-				-10.0f, -0.5f, -10.0f,
-				-10.0f, -0.5f, 10.0f,
+		//		-10.0f, 15.0f, 10.0f,  //the second wall
+		//		-10.0f, 15.0f, -10.0f,
+		//		-10.0f, -0.5f, -10.0f,
+		//		-10.0f, -0.5f, 10.0f,
 
-				10.0f, -0.5f, 10.0f,  //floor
-				10.0f, -0.5f, -10.0f,
-				-10.0f, -0.5f, -10.0f,
-				-10.0f, -0.5f, 10.0f,
+		//		10.0f, -0.5f, 10.0f,  //floor
+		//		10.0f, -0.5f, -10.0f,
+		//		-10.0f, -0.5f, -10.0f,
+		//		-10.0f, -0.5f, 10.0f,
 
-				10.0f, 15.0f, 10.0f,  //the third wall
-				10.0f, 15.0f, -10.0f,
-				10.0f, -0.5f, -10.0f,
-				10.0f, -0.5f, 10.0f,
+		//		10.0f, 15.0f, 10.0f,  //the third wall
+		//		10.0f, 15.0f, -10.0f,
+		//		10.0f, -0.5f, -10.0f,
+		//		10.0f, -0.5f, 10.0f,
 
-				10.0f, 15.0f, 10.0f,  //the forth wall
-				-10.0f, 15.0f, 10.0f,
-				-10.0f, -0.5f, 10.0f,
-				10.0f, -0.5f, 10.0f
-			};
-			float wall_color_sample[3] = { 1.0f, 1.0f, 1.0f };
-			//float wall_color_sample[3] = { 0.4, 0.7, 0.8 };
-			static GLfloat wall_color[60];
-			for (int i = 0; i < 20; ++i) {
-				for (int j = 0; j < 3; ++j)
-					wall_color[i * 3 + j] = wall_color_sample[j];
-			}
-			GLfloat  normal[] = {
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 0.0f };
-			//GLfloat  texture_coordinate[] = {
-			//	0.0f, 0.0f,
-			//	1.0f, 0.0f,
-			//	1.0f, 1.0f,
-			//	0.0f, 1.0f };
+		//		10.0f, 15.0f, 10.0f,  //the forth wall
+		//		-10.0f, 15.0f, 10.0f,
+		//		-10.0f, -0.5f, 10.0f,
+		//		10.0f, -0.5f, 10.0f
+		//	};
+		//	float wall_color_sample[3] = { 1.0f, 1.0f, 1.0f };
+		//	//float wall_color_sample[3] = { 0.4, 0.7, 0.8 };
+		//	static GLfloat wall_color[60];
+		//	for (int i = 0; i < 20; ++i) {
+		//		for (int j = 0; j < 3; ++j)
+		//			wall_color[i * 3 + j] = wall_color_sample[j];
+		//	}
+		//	GLfloat  normal[] = {
+		//		0.0f, 1.0f, 0.0f,
+		//		0.0f, 1.0f, 0.0f,
+		//		0.0f, 1.0f, 0.0f,
+		//		0.0f, 1.0f, 0.0f };
+		//	//GLfloat  texture_coordinate[] = {
+		//	//	0.0f, 0.0f,
+		//	//	1.0f, 0.0f,
+		//	//	1.0f, 1.0f,
+		//	//	0.0f, 1.0f };
 
-			GLfloat  wall_texture_coordinate[] = {
-				0.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				1.0f, 1.0f,
+		//	GLfloat  wall_texture_coordinate[] = {
+		//		0.0f, 1.0f,
+		//		0.0f, 0.0f,
+		//		1.0f, 0.0f,
+		//		1.0f, 1.0f,
 
-				0.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				1.0f, 1.0f,
+		//		0.0f, 1.0f,
+		//		0.0f, 0.0f,
+		//		1.0f, 0.0f,
+		//		1.0f, 1.0f,
 
-				0.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				1.0f, 1.0f,
+		//		0.0f, 1.0f,
+		//		0.0f, 0.0f,
+		//		1.0f, 0.0f,
+		//		1.0f, 1.0f,
 
-				0.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				1.0f, 1.0f,
+		//		0.0f, 1.0f,
+		//		0.0f, 0.0f,
+		//		1.0f, 0.0f,
+		//		1.0f, 1.0f,
 
-				0.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				1.0f, 1.0f
-			};
-			GLuint element[12];
-			for (int i = 0; i < 12; ++i) { element[i] = i; }
+		//		0.0f, 1.0f,
+		//		0.0f, 0.0f,
+		//		1.0f, 0.0f,
+		//		1.0f, 1.0f
+		//	};
+		//	GLuint element[12];
+		//	for (int i = 0; i < 12; ++i) { element[i] = i; }
 
-			this->plane = new VAO;
-			this->plane->element_amount = sizeof(element) / sizeof(GLuint);
-			glGenVertexArrays(1, &this->plane->vao);
-			glGenBuffers(3, this->plane->vbo);
-			glGenBuffers(1, &this->plane->ebo);
+		//	this->plane = new VAO;
+		//	this->plane->element_amount = sizeof(element) / sizeof(GLuint);
+		//	glGenVertexArrays(1, &this->plane->vao);
+		//	glGenBuffers(3, this->plane->vbo);
+		//	glGenBuffers(1, &this->plane->ebo);
 
-			glBindVertexArray(this->plane->vao);
+		//	glBindVertexArray(this->plane->vao);
 
-			// Position attribute
-			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-			//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-			//glEnableVertexAttribArray(0);
+		//	// Position attribute
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		//	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+		//	//glEnableVertexAttribArray(0);
 
-			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-			glEnableVertexAttribArray(0);
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
+		//	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
+		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
+		//	glEnableVertexAttribArray(0);
 
-			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_color), wall_color, GL_STATIC_DRAW);
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-			glEnableVertexAttribArray(3);
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
+		//	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_color), wall_color, GL_STATIC_DRAW);
+		//	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
+		//	glEnableVertexAttribArray(3);
 
-			////Normal attribute
-			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
-			//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-			//glEnableVertexAttribArray(1);
+		//	////Normal attribute
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
+		//	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+		//	//glEnableVertexAttribArray(1);
 
-			// Texture Coordinate attribute
-			glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[2]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(wall_texture_coordinate), wall_texture_coordinate, GL_STATIC_DRAW);
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
-			glEnableVertexAttribArray(2);
+		//	// Texture Coordinate attribute
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[2]);
+		//	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_texture_coordinate), wall_texture_coordinate, GL_STATIC_DRAW);
+		//	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
+		//	glEnableVertexAttribArray(2);
 
-			//Element attribute
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->plane->ebo);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
+		//	//Element attribute
+		//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->plane->ebo);
+		//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
 
-			// Unbind VAO
-			glBindVertexArray(0);
-		}
+		//	// Unbind VAO
+		//	glBindVertexArray(0);
+		//}
 		if (!this->skybox) {
 			GLuint element[36];
 			for (int i = 0; i < 36; ++i) { element[i] = i; }
@@ -703,9 +706,9 @@ void TrainView::draw()
 	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	setUBO();
-	HMatrix modelMatrix;
-	arcball.getMatrix(modelMatrix);
-	glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]);
+	HMatrix modelMatrix; //�A���o��? �o������ok 
+	arcball.getMatrix(modelMatrix); //�� �צn�F ������z=-250 �A�o��get�o�� �쩳�O���̪�
+	//glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]); //�o�̭��L�F��:(�o��tranf�L�F 
 	glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &modelMatrix);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -774,26 +777,27 @@ void TrainView::draw()
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
 
 	//bind shader
-	this->shader->Use();
+	//this->shader->Use();
 
 
-	glUniformMatrix4fv(
-		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	this->texture->bind(0);
-	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	//this->texture->bind(0);
+	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 
-	//bind VAO
-	glBindVertexArray(this->plane->vao);
-	glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
+	////bind VAO
+	//glBindVertexArray(this->plane->vao);
+	//glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 
-	glUseProgram(0);
+	//glUseProgram(0);
 
+	wall.draw();
 
 
 	setUBO();
@@ -816,15 +820,15 @@ void TrainView::draw()
 
 
 	glUniformMatrix4fv(
-		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+		glGetUniformLocation(this->water_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
 	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "u_color"),
+		glGetUniformLocation(this->water_shader->Program, "u_color"),
 		1,
 		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	glUniform3fv(	
+		glGetUniformLocation(this->water_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
 	this->texture->bind(0);
-	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	glUniform1i(glGetUniformLocation(this->water_shader->Program, "u_texture"), 0);
 	glBindVertexArray(this->water_wave->vao);
 	glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

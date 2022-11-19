@@ -29,6 +29,8 @@ add_executable(WaterSurface
     ${SRC_DIR}TrainView.h
     ${SRC_DIR}TrainWindow.h
     ${SRC_DIR}water_simulation.h
+    ${SRC_DIR}gpu_object.h
+    ${SRC_DIR}wall.h
 
     ${SRC_DIR}main.cpp
     ${SRC_DIR}CallBacks.cpp
@@ -38,6 +40,8 @@ add_executable(WaterSurface
     ${SRC_DIR}TrainWindow.cpp
     ${SRC_DIR}Object.cpp	
     ${SRC_DIR}water_simulation.cpp
+    ${SRC_DIR}gpu_object.cpp
+    ${SRC_DIR}wall.cpp
 
 
 
