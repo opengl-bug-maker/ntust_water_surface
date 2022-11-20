@@ -32,12 +32,12 @@ gpu_obj_t::gpu_obj_t(GLfloat* input_data, glm::mat4 model_matrix) : data(input_d
 
 void gpu_obj_t::draw(glm::mat4 modelMatrix) {
 	//todo multi parent modelMatrix
-	for(auto child : children){
+	/*for(auto child : children){
 		child->draw(model_matrix);
-	}
+	}*/
 	//todo true draw
 	this->shader->Use();
-	
+	//cerr << type << endl;
 	glUniformMatrix4fv( //warning : model matrix name
 		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &modelMatrix[0][0]); 
 

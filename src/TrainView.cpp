@@ -198,13 +198,13 @@ void TrainView::draw()
 	{
 
 		//initiailize VAO, VBO, Shader...
-		wall.bind();
-		if (!this->shader)
-			this->shader = new
-			Shader(
-				PROJECT_DIR "/src/shaders/simple.vert",
-				nullptr, nullptr, nullptr,
-				PROJECT_DIR "/src/shaders/simple.frag");
+		
+		//if (!this->shader)
+		//	this->shader = new
+		//	Shader(
+		//		PROJECT_DIR "/src/shaders/simple.vert",
+		//		nullptr, nullptr, nullptr,
+		//		PROJECT_DIR "/src/shaders/simple.frag");
 		if (!this->water_shader) {
 			this->water_shader = new
 				Shader(
@@ -549,8 +549,8 @@ void TrainView::draw()
 			PROJECT_DIR "/Images/skybox/back.jpg"
 		};
 
-		if (!this->texture)
-			this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
+		//if (!this->texture)
+		//	this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 		if (!this->skybox_texture)
 			this->skybox_texture = new skybox_t(skybox_images_path);
 		if (!this->device) {
@@ -610,6 +610,8 @@ void TrainView::draw()
 			//alcDestroyContext(context);
 			//alcCloseDevice(device);
 		}
+
+		wall.bind();
 	}
 	else
 		throw std::runtime_error("Could not initialize GLAD!");
@@ -827,7 +829,7 @@ void TrainView::draw()
 		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
 	glUniform3fv(	
 		glGetUniformLocation(this->water_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	this->texture->bind(0);
+	//this->water->bind(0);
 	glUniform1i(glGetUniformLocation(this->water_shader->Program, "u_texture"), 0);
 	glBindVertexArray(this->water_wave->vao);
 	glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
