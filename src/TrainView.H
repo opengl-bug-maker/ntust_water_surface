@@ -63,6 +63,7 @@ class CTrack;
 
 #include "gpu_object.h"
 #include "wall.h"
+#include "water.h"
 
 class TrainView : public Fl_Gl_Window
 {
@@ -119,8 +120,9 @@ class TrainView : public Fl_Gl_Window
 		ALuint buffer;
 
 		wall_t wall;
+		water_t water;
 
 		//water simulation
-		water_simulation water_simulator = water_simulation(9, nullptr);
+		//water_simulation water_simulator = water_simulation(9, nullptr);
 
 };

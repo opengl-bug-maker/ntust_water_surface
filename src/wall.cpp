@@ -136,101 +136,101 @@ void wall_t::bind() {
 	glBindVertexArray(this->vao->vao);
 
 	
-	GLfloat  wall_texture_coordinate[] = {
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
+	////GLfloat  wall_texture_coordinate[] = {
+	////	0.0f, 1.0f,
+	////	0.0f, 0.0f,
+	////	1.0f, 0.0f,
+	////	1.0f, 1.0f,
 
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
+	////	0.0f, 1.0f,
+	////	0.0f, 0.0f,
+	////	1.0f, 0.0f,
+	////	1.0f, 1.0f,
 
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
+	////	0.0f, 1.0f,
+	////	0.0f, 0.0f,
+	////	1.0f, 0.0f,
+	////	1.0f, 1.0f,
 
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
+	////	0.0f, 1.0f,
+	////	0.0f, 0.0f,
+	////	1.0f, 0.0f,
+	////	1.0f, 1.0f,
 
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f
-	};
-	GLfloat wall_vertices[] = {
-	10.0f, 15.0f, -10.0f,  //the first wall
-	-10.0f, 15.0f, -10.0f,
-	-10.0f, -0.5f, -10.0f,
-	10.0f, -0.5f, -10.0f,
+	////	0.0f, 1.0f,
+	////	0.0f, 0.0f,
+	////	1.0f, 0.0f,
+	////	1.0f, 1.0f
+	////};
+	////GLfloat wall_vertices[] = {
+	////10.0f, 15.0f, -10.0f,  //the first wall
+	////-10.0f, 15.0f, -10.0f,
+	////-10.0f, -0.5f, -10.0f,
+	////10.0f, -0.5f, -10.0f,
 
-	-10.0f, 15.0f, 10.0f,  //the second wall
-	-10.0f, 15.0f, -10.0f,
-	-10.0f, -0.5f, -10.0f,
-	-10.0f, -0.5f, 10.0f,
+	////-10.0f, 15.0f, 10.0f,  //the second wall
+	////-10.0f, 15.0f, -10.0f,
+	////-10.0f, -0.5f, -10.0f,
+	////-10.0f, -0.5f, 10.0f,
 
-	10.0f, -0.5f, 10.0f,  //floor
-	10.0f, -0.5f, -10.0f,
-	-10.0f, -0.5f, -10.0f,
-	-10.0f, -0.5f, 10.0f,
+	////10.0f, -0.5f, 10.0f,  //floor
+	////10.0f, -0.5f, -10.0f,
+	////-10.0f, -0.5f, -10.0f,
+	////-10.0f, -0.5f, 10.0f,
 
-	10.0f, 15.0f, 10.0f,  //the third wall
-	10.0f, 15.0f, -10.0f,
-	10.0f, -0.5f, -10.0f,
-	10.0f, -0.5f, 10.0f,
+	////10.0f, 15.0f, 10.0f,  //the third wall
+	////10.0f, 15.0f, -10.0f,
+	////10.0f, -0.5f, -10.0f,
+	////10.0f, -0.5f, 10.0f,
 
-	10.0f, 15.0f, 10.0f,  //the forth wall
-	-10.0f, 15.0f, 10.0f,
-	-10.0f, -0.5f, 10.0f,
-	10.0f, -0.5f, 10.0f
-	}; 
+	////10.0f, 15.0f, 10.0f,  //the forth wall
+	////-10.0f, 15.0f, 10.0f,
+	////-10.0f, -0.5f, 10.0f,
+	////10.0f, -0.5f, 10.0f
+	////}; 
 
-	//position
-	// -----------------------------------------------------------------------------------------
-	//glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[0]);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-	//glEnableVertexAttribArray(0);
+	////position
+	//// -----------------------------------------------------------------------------------------
+	////glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[0]);
+	////glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
+	////glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
+	////glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, 5*4*(3+3+2)*sizeof(GLfloat), data, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
-	//------------------------------------------------------------------------------------------
+	////------------------------------------------------------------------------------------------
 
-	//glBindBuffer(GL_ARRAY_BUFFER, this->vao->vbo[1]); //normal
-	////glBufferData(GL_ARRAY_BUFFER, sizeof(wall_color), wall_color, GL_STATIC_DRAW);
-	//glBufferData(GL_ARRAY_BUFFER, this->vao->element_amount * 3 * 4 * sizeof(GLfloat), data, GL_STATIC_DRAW);
-	////glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)(this->vao->element_amount * 4 * data_block_size[0]));
-	//glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, this->vao->vbo[1]); //normal
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(wall_color), wall_color, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->vao->element_amount * 3 * 4 * sizeof(GLfloat), data, GL_STATIC_DRAW);
+	//glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)(this->vao->element_amount * 4 * data_block_size[0]));
+	glEnableVertexAttribArray(1);
 	
 
-	// Texture Coordinate attribute
-	// -----------------------------------------------------------------------------------------------
-	//glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[2]);
-	//glBufferData(GL_ARRAY_BUFFER, 5 * 4 * (3 + 3 + 2) * sizeof(GLfloat), data, GL_STATIC_DRAW);
-	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
-	//glEnableVertexAttribArray(2);
+	////// Texture Coordinate attribute
+	////// -----------------------------------------------------------------------------------------------
+	//////glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[2]);
+	//////glBufferData(GL_ARRAY_BUFFER, 5 * 4 * (3 + 3 + 2) * sizeof(GLfloat), data, GL_STATIC_DRAW);
+	//////glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
+	//////glEnableVertexAttribArray(2);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, 5 * 4 * (3 + 3 + 2) * sizeof(GLfloat), data, GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)(5*4*(3+3)* sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-	// -----------------------------------------------------------------------------------------------
+	//// -----------------------------------------------------------------------------------------------
 	
-	//Element attribute
+	//////Element attribute
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 20*sizeof(GLuint), element, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
 
-	//todo : texture
+	////todo : texture
 	this->texture = new
 		Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 	this->texture->bind(0);

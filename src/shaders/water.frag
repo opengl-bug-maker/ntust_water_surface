@@ -16,7 +16,8 @@ uniform sampler2D u_texture;
 
 void main()
 {   
-    vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*vec3(1.0f, 0.3f, 0.3f);
+    //vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*vec3(0.8f, 0.7f, 0.2f);
+    vec3 color = vec3(0.8f, 0.7f, 0.2f);
     //f_color = vec4(color, 1.0f);
     f_color = vec4(color, 1.0f);
 }

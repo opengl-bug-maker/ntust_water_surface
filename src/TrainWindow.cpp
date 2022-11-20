@@ -53,7 +53,7 @@ TrainWindow(const int x, const int y)
 
 		trainView = new TrainView(5,5,590,590);
 		trainView->tw = this;
-		trainView->water_simulator.tw = this;
+		//trainView->water_simulator.tw = this;
 		trainView->m_pTrack = &m_Track;
 		this->resizable(trainView);
 
@@ -216,8 +216,9 @@ advanceTrain(float dir)
 //========================================================================
 {
 	trainView->tick++;
-	trainView->water_simulator.tickBack();
-	trainView->water_simulator.fresh();
+	/*trainView->water_simulator.tickBack();
+	trainView->water_simulator.fresh();*/
+	trainView->water.nextFrame();
 	//#####################################################################
 	// TODO: make this work for your train
 	//#####################################################################

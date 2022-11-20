@@ -1,33 +1,33 @@
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-struct triangle_t {
-    std::vector<glm::vec3> vertices; //size = 3
-};
-class TrainWindow;
-class surface {
-public:
-    float t2Height = 0;
-    float t1Height = 0;
-    float height = 0;
-};
-class water_simulation {
-public:
-    water_simulation(int, TrainWindow* tw);
-    float slowdown = 0.7;
-    float speed = 0.8;
-    float baisHeight = 12.0f;
-    int count = 0;
-    surface** surfaces;
-    TrainWindow* tw;
-    
-    void fresh();
-    void tickBack();
-    void get_matrix(std::vector<triangle_t>&);
-private:
-};
+//#include <iostream>
+//#include <iomanip>
+//#include <vector>
+//#include <glm/glm.hpp>
+//#include <glm/gtx/transform.hpp>
+//struct triangle_t {
+//    std::vector<glm::vec3> vertices; //size = 3
+//};
+//class TrainWindow;
+//class surface {
+//public:
+//    float t2Height = 0;
+//    float t1Height = 0;
+//    float height = 0;
+//};
+//class water_simulation {
+//public:
+//    water_simulation(int, TrainWindow* tw);
+//    float slowdown = 0.7;
+//    float speed = 0.8;
+//    float baisHeight = 12.0f;
+//    int count = 0;
+//    surface** surfaces;
+//    TrainWindow* tw;
+//    
+//    void fresh();
+//    void tickBack();
+//    void get_matrix(std::vector<triangle_t>&);
+//private:
+//};
 
 
 

@@ -42,6 +42,7 @@ void gpu_obj_t::draw(glm::mat4 modelMatrix) {
 		glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &modelMatrix[0][0]); 
 
 	glBindVertexArray(vao->vao); //wtf
+	//glDrawElements(type, vao->element_amount * (type == GL_QUADS ? 4 : 3), GL_UNSIGNED_INT, 0);
 	glDrawElements(type, vao->element_amount * 4, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 

@@ -56,7 +56,7 @@ TrainView(int x, int y, int w, int h, const char* l)
 	//========================================================================
 {
 	mode(FL_RGB | FL_ALPHA | FL_DOUBLE | FL_STENCIL);
-	water_simulator = water_simulation(30, nullptr);
+	//water_simulator = water_simulation(30, nullptr);
 	// water_simulator.surfaces[5][5].height = 3;
 	//this->water_wave = new VAO;
 	resetArcball();
@@ -193,18 +193,20 @@ void TrainView::draw()
 	//initialized glad
 
 	//draw_everything_in_gl1_0();
-	vector<triangle_t> triangles;
+	//vector<triangle_t> triangles;
 	if (gladLoadGL())
 	{
-
+		//wall.bind();
 		//initiailize VAO, VBO, Shader...
+		wall.bind();
+		water.bind();
 		
-		//if (!this->shader)
-		//	this->shader = new
-		//	Shader(
-		//		PROJECT_DIR "/src/shaders/simple.vert",
-		//		nullptr, nullptr, nullptr,
-		//		PROJECT_DIR "/src/shaders/simple.frag");
+		if (!this->shader)
+			this->shader = new
+			Shader(
+				PROJECT_DIR "/src/shaders/simple.vert",
+				nullptr, nullptr, nullptr,
+				PROJECT_DIR "/src/shaders/simple.frag");
 		if (!this->water_shader) {
 			this->water_shader = new
 				Shader(
@@ -346,200 +348,203 @@ void TrainView::draw()
 		//	glBindVertexArray(0);
 		//}
 		if (!this->skybox) {
-			GLuint element[36];
-			for (int i = 0; i < 36; ++i) { element[i] = i; }
-			GLfloat skyboxVertices[] = {
-				// positions          
-				-1.0f,  1.0f, -1.0f,
-				-1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-				 1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
+	GLuint element[36];
+	for (int i = 0; i < 36; ++i) { element[i] = i; }
+	GLfloat skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
 
-				-1.0f, -1.0f,  1.0f,
-				-1.0f, -1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f,  1.0f,
-				-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
 
-				 1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
 
-				-1.0f, -1.0f,  1.0f,
-				-1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f, -1.0f,  1.0f,
-				-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
 
-				-1.0f,  1.0f, -1.0f,
-				 1.0f,  1.0f, -1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				-1.0f,  1.0f,  1.0f,
-				-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
 
-				-1.0f, -1.0f, -1.0f,
-				-1.0f, -1.0f,  1.0f,
-				 1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-				-1.0f, -1.0f,  1.0f,
-				 1.0f, -1.0f,  1.0f
-			};
-			//for(int i= 0; i<36*3; ++i){
-			//	skyboxVertices[i] *= 10;
-			//}
-			this->skybox = new VAO;
-			this->skybox->element_amount = sizeof(element) / sizeof(GLuint);
-			glGenVertexArrays(1, &this->skybox->vao);
-			glGenBuffers(1, this->skybox->vbo);
-			glGenBuffers(1, &this->skybox->ebo);
-			glBindVertexArray(this->skybox->vao);
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	//for(int i= 0; i<36*3; ++i){
+	//	skyboxVertices[i] *= 10;
+	//}
+	this->skybox = new VAO;
+	this->skybox->element_amount = sizeof(element) / sizeof(GLuint);
+	glGenVertexArrays(1, &this->skybox->vao);
+	glGenBuffers(1, this->skybox->vbo);
+	glGenBuffers(1, &this->skybox->ebo);
+	glBindVertexArray(this->skybox->vao);
 
-			glBindBuffer(GL_ARRAY_BUFFER, this->skybox->vbo[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-			glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, this->skybox->vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+	glEnableVertexAttribArray(0);
 
-			//Element attribute
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->skybox->ebo);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
+	//Element attribute
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->skybox->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
 
-			// Unbind VAO
-			glBindVertexArray(0);
-		}
-		if (!this->water_wave) {
-			float edge_length = 20.0f;
-			float divide_n = 20.0f;
-			float stride = edge_length / divide_n;
-			float amptitude = 3;
+	// Unbind VAO
+	glBindVertexArray(0);
+}
+		//if (!this->water_wave) {
 
-			//vector<triangle_t> triangles;
-			//water_simulator.get_matrix(triangles);
-			//for (int i = 0; i < edge_length; i += stride) {
-			//	for (int j = 0; j < edge_length; j += stride) {
-			//		/*  a   d
-			//		*     _
-			//		*	 |_|
-			//		*	b   c
-			//		*/
-			//		float x = i-10, y = j-10;
-			//		glm::vec3 a(x, 12.0, y );
-			//		glm::vec3 b( x+1, 12.0, y);
-			//		glm::vec3 c( x+1, 12.0, y+1 );
-			//		glm::vec3 d( x, 12.0, y+1 );
-			//		//lower left
-			//		triangle_t lower_left;
-			//		lower_left.vertices = { a, b, c };
-			//		
-			//		//top right
-			//		triangle_t upper_right;
-			//		upper_right.vertices = { a, d, c };
+		//	float edge_length = 20.0f;
+		//	float divide_n = 20.0f;
+		//	float stride = edge_length / divide_n;
+		//	float amptitude = 3;
 
-			//		triangles.push_back(lower_left);
-			//		triangles.push_back(upper_right);
-			//	}
-			//}
+		//	//vector<triangle_t> triangles;
+		//	//water_simulator.get_matrix(triangles);
+		//	//for (int i = 0; i < edge_length; i += stride) {
+		//	//	for (int j = 0; j < edge_length; j += stride) {
+		//	//		/*  a   d
+		//	//		*     _
+		//	//		*	 |_|
+		//	//		*	b   c
+		//	//		*/
+		//	//		float x = i-10, y = j-10;
+		//	//		glm::vec3 a(x, 12.0, y );
+		//	//		glm::vec3 b( x+1, 12.0, y);
+		//	//		glm::vec3 c( x+1, 12.0, y+1 );
+		//	//		glm::vec3 d( x, 12.0, y+1 );
+		//	//		//lower left
+		//	//		triangle_t lower_left;
+		//	//		lower_left.vertices = { a, b, c };
+		//	//		
+		//	//		//top right
+		//	//		triangle_t upper_right;
+		//	//		upper_right.vertices = { a, d, c };
 
-			water_simulator.get_matrix(triangles);
-			//GLfloat* water_vertices = new GLfloat[5400*3];
-			//water_simulator.get_matrix(triangles);
-			//int water_vertices_n = 0;
-			//std::cout << triangles.size() << " " << triangles[0].vertices.size() << std::endl;
+		//	//		triangles.push_back(lower_left);
+		//	//		triangles.push_back(upper_right);
+		//	//	}
+		//	//}
 
-			//for (auto& triangle : triangles) { //200
-			//	for (auto& vertice : triangle.vertices) { //3
-			//		water_vertices[water_vertices_n++] = vertice.x;
-			//		water_vertices[water_vertices_n++] = vertice.y;
-			//		water_vertices[water_vertices_n++] = vertice.z;
-			//	}
-			//}
+		//	water_simulator.get_matrix(triangles);
+		//	//GLfloat* water_vertices = new GLfloat[5400*3];
+		//	//water_simulator.get_matrix(triangles);
+		//	//int water_vertices_n = 0;
+		//	//std::cout << triangles.size() << " " << triangles[0].vertices.size() << std::endl;
 
-			float water_color_sample[3] = { 0.4, 0.7, 0.8 };
-			static GLfloat water_color[60];
-			for (int i = 0; i < 20; ++i) {
-				for (int j = 0; j < 3; ++j)
-					water_color[i * 3 + j] = water_color_sample[j];
-			}
-			GLfloat  normal[] = {
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 0.0f };
+		//	//for (auto& triangle : triangles) { //200
+		//	//	for (auto& vertice : triangle.vertices) { //3
+		//	//		water_vertices[water_vertices_n++] = vertice.x;
+		//	//		water_vertices[water_vertices_n++] = vertice.y;
+		//	//		water_vertices[water_vertices_n++] = vertice.z;
+		//	//	}
+		//	//}
 
-			GLuint element[1800 * 3];
-			for (int i = 0; i < 1800 * 3; ++i) { element[i] = i; }
+		//	float water_color_sample[3] = { 0.4, 0.7, 0.8 };
+		//	static GLfloat water_color[60];
+		//	for (int i = 0; i < 20; ++i) {
+		//		for (int j = 0; j < 3; ++j)
+		//			water_color[i * 3 + j] = water_color_sample[j];
+		//	}
+		//	GLfloat  normal[] = {
+		//		0.0f, 1.0f, 0.0f,
+		//		0.0f, 1.0f, 0.0f,
+		//		0.0f, 1.0f, 0.0f,
+		//		0.0f, 1.0f, 0.0f };
 
-			this->water_wave = new VAO;
-			this->water_wave->element_amount = sizeof(element) / sizeof(GLuint);
-			glGenVertexArrays(1, &this->water_wave->vao);
-			glGenBuffers(3, this->water_wave->vbo);
-			glGenBuffers(1, &this->water_wave->ebo);
+		//	GLuint water_element[1800 * 3];
+		//	for (int i = 0; i < 1800 * 3; ++i) { water_element[i] = i; }
 
-			glBindVertexArray(this->water_wave->vao);
+		//	this->water_wave = new VAO;
+		//	this->water_wave->element_amount = sizeof(water_element) / sizeof(GLuint);
+		//	glGenVertexArrays(1, &this->water_wave->vao);
+		//	glGenBuffers(1, this->water_wave->vbo);
+		//	glGenBuffers(1, &this->water_wave->ebo);
 
-			// Position attribute
-			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-			//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-			//glEnableVertexAttribArray(0);
+		//	glBindVertexArray(this->water_wave->vao);
 
-			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_DYNAMIC_DRAW);
-			//glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), water_vertices, GL_DYNAMIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-			glEnableVertexAttribArray(0);
+		//	// Position attribute
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		//	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+		//	//glEnableVertexAttribArray(0);
 
-			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave), wall_color, GL_STATIC_DRAW);
-			//glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
-			//glEnableVertexAttribArray(3);
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
+		//	glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_STATIC_DRAW);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_STATIC_DRAW);
+		//	//glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), water_vertices, GL_DYNAMIC_DRAW);
+		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
+		//	glEnableVertexAttribArray(0);
 
-			////Normal attribute
-			//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
-			//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-			//glEnableVertexAttribArray(1);
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[1]);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(water_color), water_color, GL_STATIC_DRAW);
+		//	//glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
+		//	//glEnableVertexAttribArray(3);
 
-			// Texture Coordinate attribute
-			GLfloat water_wave_coordinate[5400 * 2] = { 0, 0, 0, 1, 1, 0 };
-			for (int i = 0; i < 900; ++i) {
-				water_wave_coordinate[i * 12 + 0] = 0;
-				water_wave_coordinate[i * 12 + 1] = 0;
-				water_wave_coordinate[i * 12 + 2] = 0;
-				water_wave_coordinate[i * 12 + 3] = 1;
-				water_wave_coordinate[i * 12 + 4] = 1;
-				water_wave_coordinate[i * 12 + 5] = 0;
+		//	//Normal attribute
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
+		//	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+		//	//glEnableVertexAttribArray(1);
 
-				water_wave_coordinate[i * 12 + 6] = 0;
-				water_wave_coordinate[i * 12 + 7] = 0;
-				water_wave_coordinate[i * 12 + 8] = 0;
-				water_wave_coordinate[i * 12 + 9] = 1;
-				water_wave_coordinate[i * 12 + 10] = 1;
-				water_wave_coordinate[i * 12 + 11] = 1;
+		//	// Texture Coordinate attribute
+		//	GLfloat water_wave_coordinate[5400 * 2] = { 0, 0, 0, 1, 1, 0 };
+		//	for (int i = 0; i < 900; ++i) {
+		//		water_wave_coordinate[i * 12 + 0] = 0;
+		//		water_wave_coordinate[i * 12 + 1] = 0;
+		//		water_wave_coordinate[i * 12 + 2] = 0;
+		//		water_wave_coordinate[i * 12 + 3] = 1;
+		//		water_wave_coordinate[i * 12 + 4] = 1;
+		//		water_wave_coordinate[i * 12 + 5] = 0;
 
-			}
-			//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave_coordinate), water_wave_coordinate, GL_STATIC_DRAW);
-			//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
-			//glEnableVertexAttribArray(2);
+		//		water_wave_coordinate[i * 12 + 6] = 0;
+		//		water_wave_coordinate[i * 12 + 7] = 0;
+		//		water_wave_coordinate[i * 12 + 8] = 0;
+		//		water_wave_coordinate[i * 12 + 9] = 1;
+		//		water_wave_coordinate[i * 12 + 10] = 1;
+		//		water_wave_coordinate[i * 12 + 11] = 1;
 
-			//Element attribute
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->water_wave->ebo);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
+		//	}
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
+		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave_coordinate), water_wave_coordinate, GL_STATIC_DRAW);
+		//	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
+		//	//glEnableVertexAttribArray(2);
 
-			// Unbind VAO
+		//	//Element attribute
+		//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->water_wave->ebo);
+		//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(water_element), water_element, GL_STATIC_DRAW);
 
-			glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
-			//glBindVertexArray(0);
+		//	// Unbind VAO
 
-		}
+		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
+		//	glBindVertexArray(0);
+
+		//}
+		
 		vector<string> skybox_images_path = {
 			PROJECT_DIR "/Images/skybox/right.jpg",
 			PROJECT_DIR "/Images/skybox/left.jpg",
@@ -610,8 +615,9 @@ void TrainView::draw()
 			//alcDestroyContext(context);
 			//alcCloseDevice(device);
 		}
-
-		wall.bind();
+		//wall.bind();
+		//water.bind();
+		
 	}
 	else
 		throw std::runtime_error("Could not initialize GLAD!");
@@ -708,9 +714,9 @@ void TrainView::draw()
 	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	setUBO();
-	HMatrix modelMatrix; //�A���o��? �o������ok 
-	arcball.getMatrix(modelMatrix); //�� �צn�F ������z=-250 �A�o��get�o�� �쩳�O���̪�
-	//glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]); //�o�̭��L�F��:(�o��tranf�L�F 
+	HMatrix modelMatrix; 
+	arcball.getMatrix(modelMatrix); 
+	//glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &modelMatrix);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -800,40 +806,40 @@ void TrainView::draw()
 	//glUseProgram(0);
 
 	wall.draw();
-
-
+	water.draw();
+	//GOGO? gogo
 	setUBO();
 
 	// recalculate the water triangles
-	int water_vertices_n = 0;
-	triangles.clear();
-	water_simulator.get_matrix(triangles);
-	for (auto& triangle : triangles) { //200
-		for (auto& vertice : triangle.vertices) { //3
-			water_vertices[water_vertices_n++] = vertice.x;
-			water_vertices[water_vertices_n++] = vertice.y;
-			water_vertices[water_vertices_n++] = vertice.z;
-		}
-	}
+	//int water_vertices_n = 0;
+	//triangles.clear();
+	//water_simulator.get_matrix(triangles);
+	//for (auto& triangle : triangles) { //200
+	//	for (auto& vertice : triangle.vertices) { //3
+	//		water_vertices[water_vertices_n++] = vertice.x;
+	//		water_vertices[water_vertices_n++] = vertice.y;
+	//		water_vertices[water_vertices_n++] = vertice.z;
+	//	}
+	//}
 
 	//rewrite the triangles martics in buffer
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(water_vertices), water_vertices);
-	this->water_shader->Use();
+	//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(water_vertices), water_vertices);
+	//this->water_shader->Use();
 
 
-	glUniformMatrix4fv(
-		glGetUniformLocation(this->water_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	glUniform3fv(
-		glGetUniformLocation(this->water_shader->Program, "u_color"),
-		1,
-		&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(	
-		glGetUniformLocation(this->water_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	//this->water->bind(0);
-	glUniform1i(glGetUniformLocation(this->water_shader->Program, "u_texture"), 0);
-	glBindVertexArray(this->water_wave->vao);
-	glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(this->water_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->water_shader->Program, "u_color"),
+	//	1,
+	//	&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
+	//glUniform3fv(	
+	//	glGetUniformLocation(this->water_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	////this->water->bind(0);
+	////glUniform1i(glGetUniformLocation(this->water_shader->Program, "u_texture"), 0);
+	//glBindVertexArray(this->water_wave->vao);
+	//glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
+	//glBindVertexArray(0);
 
 	//glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 	//unbind VAO
