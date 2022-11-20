@@ -1,5 +1,7 @@
 #include "gpu_object.h"
 #include "Utilities/Pnt3f.H"
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 class TrainWindow;
 
 class surface {

@@ -92,6 +92,7 @@ class TrainView : public Fl_Gl_Window
 
 		//set ubo
 		void setUBO();
+		void set_everything_in_gl1_0();
 		void draw_everything_in_gl1_0();
 	public:
 		unsigned int tick = 0;

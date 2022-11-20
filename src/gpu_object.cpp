@@ -32,6 +32,8 @@ gpu_obj_t::gpu_obj_t(GLfloat* input_data, glm::mat4 model_matrix) : data(input_d
 
 void gpu_obj_t::draw(glm::mat4 modelMatrix) {
 	//todo multi parent modelMatrix
+	// modelMatrix * this->model_matrix
+	modelMatrix = modelMatrix * this->model_matrix;
 	/*for(auto child : children){
 		child->draw(model_matrix);
 	}*/

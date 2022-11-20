@@ -173,455 +173,64 @@ int TrainView::handle(int event)
 
 	return Fl_Gl_Window::handle(event);
 }
-void  TrainView::draw_everything_in_gl1_0() {
+void TrainView::set_everything_in_gl1_0() {
+	if (!this->device) {
+		//Tutorial: https://ffainelli.github.io/openal-example/
+		this->device = alcOpenDevice(NULL);
+		if (!this->device)
+			puts("ERROR::NO_AUDIO_DEVICE");
 
-}
-//************************************************************************
-//
-// * this is the code that actually draws the window
-//   it puts a lot of the work into other routines to simplify things
-//========================================================================
-GLfloat water_vertices[5400 * 3];
-void TrainView::draw()
-{
+		ALboolean enumeration = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
+		if (enumeration == AL_FALSE)
+			puts("Enumeration not supported");
+		else
+			puts("Enumeration supported");
 
-	//*********************************************************************
-	//
-	// * Set up basic opengl informaiton
-	//
-	//**********************************************************************
-	//initialized glad
+		this->context = alcCreateContext(this->device, NULL);
+		if (!alcMakeContextCurrent(context))
+			puts("Failed to make context current");
 
-	//draw_everything_in_gl1_0();
-	//vector<triangle_t> triangles;
-	if (gladLoadGL())
-	{
-		//wall.bind();
-		//initiailize VAO, VBO, Shader...
-		wall.bind();
-		water.bind();
-		
-		if (!this->shader)
-			this->shader = new
-			Shader(
-				PROJECT_DIR "/src/shaders/simple.vert",
-				nullptr, nullptr, nullptr,
-				PROJECT_DIR "/src/shaders/simple.frag");
-		if (!this->water_shader) {
-			this->water_shader = new
-				Shader(
-					PROJECT_DIR "/src/shaders/water.vert",
-					nullptr, nullptr, nullptr,
-					PROJECT_DIR "/src/shaders/water.frag");
-		}
-		if (!this->skybox_shader) {
-			this->skybox_shader = new
-				Shader(
-					PROJECT_DIR "/src/shaders/skybox.vert",
-					nullptr, nullptr, nullptr,
-					PROJECT_DIR "/src/shaders/skybox.frag");
-		}
+		this->source_pos = glm::vec3(0.0f, 5.0f, 0.0f);
 
-		if (!this->commom_matrices)
-			this->commom_matrices = new UBO();
-		this->commom_matrices->size = 2 * sizeof(glm::mat4);
-		glGenBuffers(1, &this->commom_matrices->ubo);
-		glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
-		glBufferData(GL_UNIFORM_BUFFER, this->commom_matrices->size, NULL, GL_STATIC_DRAW);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		ALfloat listenerOri[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f };
+		alListener3f(AL_POSITION, source_pos.x, source_pos.y, source_pos.z);
+		alListener3f(AL_VELOCITY, 0, 0, 0);
+		alListenerfv(AL_ORIENTATION, listenerOri);
 
-		//if (!this->plane) {
-		//	GLfloat wall_vertices[] = {
-		//		10.0f, 15.0f, -10.0f,  //the first wall
-		//		-10.0f, 15.0f, -10.0f,
-		//		-10.0f, -0.5f, -10.0f,
-		//		10.0f, -0.5f, -10.0f,
+		alGenSources((ALuint)1, &this->source);
+		alSourcef(this->source, AL_PITCH, 1);
+		alSourcef(this->source, AL_GAIN, 1.0f);
+		alSource3f(this->source, AL_POSITION, source_pos.x, source_pos.y, source_pos.z);
+		alSource3f(this->source, AL_VELOCITY, 0, 0, 0);
+		alSourcei(this->source, AL_LOOPING, AL_TRUE);
 
-		//		-10.0f, 15.0f, 10.0f,  //the second wall
-		//		-10.0f, 15.0f, -10.0f,
-		//		-10.0f, -0.5f, -10.0f,
-		//		-10.0f, -0.5f, 10.0f,
+		alGenBuffers((ALuint)1, &this->buffer);
 
-		//		10.0f, -0.5f, 10.0f,  //floor
-		//		10.0f, -0.5f, -10.0f,
-		//		-10.0f, -0.5f, -10.0f,
-		//		-10.0f, -0.5f, 10.0f,
+		ALsizei size, freq;
+		ALenum format;
+		ALvoid* data;
+		ALboolean loop = AL_TRUE;
 
-		//		10.0f, 15.0f, 10.0f,  //the third wall
-		//		10.0f, 15.0f, -10.0f,
-		//		10.0f, -0.5f, -10.0f,
-		//		10.0f, -0.5f, 10.0f,
+		//Material from: ThinMatrix
+		alutLoadWAVFile((ALbyte*)PROJECT_DIR "/Audios/bounce.wav", &format, &data, &size, &freq, &loop);
+		alBufferData(this->buffer, format, data, size, freq);
+		alSourcei(this->source, AL_BUFFER, this->buffer);
 
-		//		10.0f, 15.0f, 10.0f,  //the forth wall
-		//		-10.0f, 15.0f, 10.0f,
-		//		-10.0f, -0.5f, 10.0f,
-		//		10.0f, -0.5f, 10.0f
-		//	};
-		//	float wall_color_sample[3] = { 1.0f, 1.0f, 1.0f };
-		//	//float wall_color_sample[3] = { 0.4, 0.7, 0.8 };
-		//	static GLfloat wall_color[60];
-		//	for (int i = 0; i < 20; ++i) {
-		//		for (int j = 0; j < 3; ++j)
-		//			wall_color[i * 3 + j] = wall_color_sample[j];
-		//	}
-		//	GLfloat  normal[] = {
-		//		0.0f, 1.0f, 0.0f,
-		//		0.0f, 1.0f, 0.0f,
-		//		0.0f, 1.0f, 0.0f,
-		//		0.0f, 1.0f, 0.0f };
-		//	//GLfloat  texture_coordinate[] = {
-		//	//	0.0f, 0.0f,
-		//	//	1.0f, 0.0f,
-		//	//	1.0f, 1.0f,
-		//	//	0.0f, 1.0f };
+		if (format == AL_FORMAT_STEREO16 || format == AL_FORMAT_STEREO8)
+			puts("TYPE::STEREO");
+		else if (format == AL_FORMAT_MONO16 || format == AL_FORMAT_MONO8)
+			puts("TYPE::MONO");
 
-		//	GLfloat  wall_texture_coordinate[] = {
-		//		0.0f, 1.0f,
-		//		0.0f, 0.0f,
-		//		1.0f, 0.0f,
-		//		1.0f, 1.0f,
+		alSourcePlay(this->source);
 
-		//		0.0f, 1.0f,
-		//		0.0f, 0.0f,
-		//		1.0f, 0.0f,
-		//		1.0f, 1.0f,
-
-		//		0.0f, 1.0f,
-		//		0.0f, 0.0f,
-		//		1.0f, 0.0f,
-		//		1.0f, 1.0f,
-
-		//		0.0f, 1.0f,
-		//		0.0f, 0.0f,
-		//		1.0f, 0.0f,
-		//		1.0f, 1.0f,
-
-		//		0.0f, 1.0f,
-		//		0.0f, 0.0f,
-		//		1.0f, 0.0f,
-		//		1.0f, 1.0f
-		//	};
-		//	GLuint element[12];
-		//	for (int i = 0; i < 12; ++i) { element[i] = i; }
-
-		//	this->plane = new VAO;
-		//	this->plane->element_amount = sizeof(element) / sizeof(GLuint);
-		//	glGenVertexArrays(1, &this->plane->vao);
-		//	glGenBuffers(3, this->plane->vbo);
-		//	glGenBuffers(1, &this->plane->ebo);
-
-		//	glBindVertexArray(this->plane->vao);
-
-		//	// Position attribute
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		//	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-		//	//glEnableVertexAttribArray(0);
-
-		//	glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-		//	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
-		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-		//	glEnableVertexAttribArray(0);
-
-		//	glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-		//	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_color), wall_color, GL_STATIC_DRAW);
-		//	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-		//	glEnableVertexAttribArray(3);
-
-		//	////Normal attribute
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[1]);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
-		//	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-		//	//glEnableVertexAttribArray(1);
-
-		//	// Texture Coordinate attribute
-		//	glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[2]);
-		//	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_texture_coordinate), wall_texture_coordinate, GL_STATIC_DRAW);
-		//	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)0);
-		//	glEnableVertexAttribArray(2);
-
-		//	//Element attribute
-		//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->plane->ebo);
-		//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
-
-		//	// Unbind VAO
-		//	glBindVertexArray(0);
-		//}
-		if (!this->skybox) {
-	GLuint element[36];
-	for (int i = 0; i < 36; ++i) { element[i] = i; }
-	GLfloat skyboxVertices[] = {
-		// positions          
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f
-	};
-	//for(int i= 0; i<36*3; ++i){
-	//	skyboxVertices[i] *= 10;
-	//}
-	this->skybox = new VAO;
-	this->skybox->element_amount = sizeof(element) / sizeof(GLuint);
-	glGenVertexArrays(1, &this->skybox->vao);
-	glGenBuffers(1, this->skybox->vbo);
-	glGenBuffers(1, &this->skybox->ebo);
-	glBindVertexArray(this->skybox->vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, this->skybox->vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	//Element attribute
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->skybox->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
-
-	// Unbind VAO
-	glBindVertexArray(0);
-}
-		//if (!this->water_wave) {
-
-		//	float edge_length = 20.0f;
-		//	float divide_n = 20.0f;
-		//	float stride = edge_length / divide_n;
-		//	float amptitude = 3;
-
-		//	//vector<triangle_t> triangles;
-		//	//water_simulator.get_matrix(triangles);
-		//	//for (int i = 0; i < edge_length; i += stride) {
-		//	//	for (int j = 0; j < edge_length; j += stride) {
-		//	//		/*  a   d
-		//	//		*     _
-		//	//		*	 |_|
-		//	//		*	b   c
-		//	//		*/
-		//	//		float x = i-10, y = j-10;
-		//	//		glm::vec3 a(x, 12.0, y );
-		//	//		glm::vec3 b( x+1, 12.0, y);
-		//	//		glm::vec3 c( x+1, 12.0, y+1 );
-		//	//		glm::vec3 d( x, 12.0, y+1 );
-		//	//		//lower left
-		//	//		triangle_t lower_left;
-		//	//		lower_left.vertices = { a, b, c };
-		//	//		
-		//	//		//top right
-		//	//		triangle_t upper_right;
-		//	//		upper_right.vertices = { a, d, c };
-
-		//	//		triangles.push_back(lower_left);
-		//	//		triangles.push_back(upper_right);
-		//	//	}
-		//	//}
-
-		//	water_simulator.get_matrix(triangles);
-		//	//GLfloat* water_vertices = new GLfloat[5400*3];
-		//	//water_simulator.get_matrix(triangles);
-		//	//int water_vertices_n = 0;
-		//	//std::cout << triangles.size() << " " << triangles[0].vertices.size() << std::endl;
-
-		//	//for (auto& triangle : triangles) { //200
-		//	//	for (auto& vertice : triangle.vertices) { //3
-		//	//		water_vertices[water_vertices_n++] = vertice.x;
-		//	//		water_vertices[water_vertices_n++] = vertice.y;
-		//	//		water_vertices[water_vertices_n++] = vertice.z;
-		//	//	}
-		//	//}
-
-		//	float water_color_sample[3] = { 0.4, 0.7, 0.8 };
-		//	static GLfloat water_color[60];
-		//	for (int i = 0; i < 20; ++i) {
-		//		for (int j = 0; j < 3; ++j)
-		//			water_color[i * 3 + j] = water_color_sample[j];
-		//	}
-		//	GLfloat  normal[] = {
-		//		0.0f, 1.0f, 0.0f,
-		//		0.0f, 1.0f, 0.0f,
-		//		0.0f, 1.0f, 0.0f,
-		//		0.0f, 1.0f, 0.0f };
-
-		//	GLuint water_element[1800 * 3];
-		//	for (int i = 0; i < 1800 * 3; ++i) { water_element[i] = i; }
-
-		//	this->water_wave = new VAO;
-		//	this->water_wave->element_amount = sizeof(water_element) / sizeof(GLuint);
-		//	glGenVertexArrays(1, &this->water_wave->vao);
-		//	glGenBuffers(1, this->water_wave->vbo);
-		//	glGenBuffers(1, &this->water_wave->ebo);
-
-		//	glBindVertexArray(this->water_wave->vao);
-
-		//	// Position attribute
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->plane->vbo[0]);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		//	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-		//	//glEnableVertexAttribArray(0);
-
-		//	glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
-		//	glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_STATIC_DRAW);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(water_vertices), water_vertices, GL_STATIC_DRAW);
-		//	//glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), water_vertices, GL_DYNAMIC_DRAW);
-		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
-		//	glEnableVertexAttribArray(0);
-
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[1]);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(water_color), water_color, GL_STATIC_DRAW);
-		//	//glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0*sizeof(GLfloat), (void*)0);
-		//	//glEnableVertexAttribArray(3);
-
-		//	//Normal attribute
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
-		//	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-		//	//glEnableVertexAttribArray(1);
-
-		//	// Texture Coordinate attribute
-		//	GLfloat water_wave_coordinate[5400 * 2] = { 0, 0, 0, 1, 1, 0 };
-		//	for (int i = 0; i < 900; ++i) {
-		//		water_wave_coordinate[i * 12 + 0] = 0;
-		//		water_wave_coordinate[i * 12 + 1] = 0;
-		//		water_wave_coordinate[i * 12 + 2] = 0;
-		//		water_wave_coordinate[i * 12 + 3] = 1;
-		//		water_wave_coordinate[i * 12 + 4] = 1;
-		//		water_wave_coordinate[i * 12 + 5] = 0;
-
-		//		water_wave_coordinate[i * 12 + 6] = 0;
-		//		water_wave_coordinate[i * 12 + 7] = 0;
-		//		water_wave_coordinate[i * 12 + 8] = 0;
-		//		water_wave_coordinate[i * 12 + 9] = 1;
-		//		water_wave_coordinate[i * 12 + 10] = 1;
-		//		water_wave_coordinate[i * 12 + 11] = 1;
-
-		//	}
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[2]);
-		//	//glBufferData(GL_ARRAY_BUFFER, sizeof(water_wave_coordinate), water_wave_coordinate, GL_STATIC_DRAW);
-		//	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0* sizeof(GLfloat), (GLvoid*)0);
-		//	//glEnableVertexAttribArray(2);
-
-		//	//Element attribute
-		//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->water_wave->ebo);
-		//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(water_element), water_element, GL_STATIC_DRAW);
-
-		//	// Unbind VAO
-
-		//	//glBindBuffer(GL_ARRAY_BUFFER, this->water_wave->vbo[0]);
-		//	glBindVertexArray(0);
-
-		//}
-		
-		vector<string> skybox_images_path = {
-			PROJECT_DIR "/Images/skybox/right.jpg",
-			PROJECT_DIR "/Images/skybox/left.jpg",
-			PROJECT_DIR "/Images/skybox/top.jpg",
-			PROJECT_DIR "/Images/skybox/bottom.jpg",
-			PROJECT_DIR "/Images/skybox/front.jpg",
-			PROJECT_DIR "/Images/skybox/back.jpg"
-		};
-
-		//if (!this->texture)
-		//	this->texture = new Texture2D(PROJECT_DIR "/Images/tiles.jpg");
-		if (!this->skybox_texture)
-			this->skybox_texture = new skybox_t(skybox_images_path);
-		if (!this->device) {
-			//Tutorial: https://ffainelli.github.io/openal-example/
-			this->device = alcOpenDevice(NULL);
-			if (!this->device)
-				puts("ERROR::NO_AUDIO_DEVICE");
-
-			ALboolean enumeration = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
-			if (enumeration == AL_FALSE)
-				puts("Enumeration not supported");
-			else
-				puts("Enumeration supported");
-
-			this->context = alcCreateContext(this->device, NULL);
-			if (!alcMakeContextCurrent(context))
-				puts("Failed to make context current");
-
-			this->source_pos = glm::vec3(0.0f, 5.0f, 0.0f);
-
-			ALfloat listenerOri[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f };
-			alListener3f(AL_POSITION, source_pos.x, source_pos.y, source_pos.z);
-			alListener3f(AL_VELOCITY, 0, 0, 0);
-			alListenerfv(AL_ORIENTATION, listenerOri);
-
-			alGenSources((ALuint)1, &this->source);
-			alSourcef(this->source, AL_PITCH, 1);
-			alSourcef(this->source, AL_GAIN, 1.0f);
-			alSource3f(this->source, AL_POSITION, source_pos.x, source_pos.y, source_pos.z);
-			alSource3f(this->source, AL_VELOCITY, 0, 0, 0);
-			alSourcei(this->source, AL_LOOPING, AL_TRUE);
-
-			alGenBuffers((ALuint)1, &this->buffer);
-
-			ALsizei size, freq;
-			ALenum format;
-			ALvoid* data;
-			ALboolean loop = AL_TRUE;
-
-			//Material from: ThinMatrix
-			alutLoadWAVFile((ALbyte*)PROJECT_DIR "/Audios/bounce.wav", &format, &data, &size, &freq, &loop);
-			alBufferData(this->buffer, format, data, size, freq);
-			alSourcei(this->source, AL_BUFFER, this->buffer);
-
-			if (format == AL_FORMAT_STEREO16 || format == AL_FORMAT_STEREO8)
-				puts("TYPE::STEREO");
-			else if (format == AL_FORMAT_MONO16 || format == AL_FORMAT_MONO8)
-				puts("TYPE::MONO");
-
-			alSourcePlay(this->source);
-
-			// cleanup context
-			//alDeleteSources(1, &source);
-			//alDeleteBuffers(1, &buffer);
-			//device = alcGetContextsDevice(context);
-			//alcMakeContextCurrent(NULL);
-			//alcDestroyContext(context);
-			//alcCloseDevice(device);
-		}
-		//wall.bind();
-		//water.bind();
-		
+		// cleanup context
+		//alDeleteSources(1, &source);
+		//alDeleteBuffers(1, &buffer);
+		//device = alcGetContextsDevice(context);
+		//alcMakeContextCurrent(NULL);
+		//alcDestroyContext(context);
+		//alcCloseDevice(device);
 	}
-	else
-		throw std::runtime_error("Could not initialize GLAD!");
-
 	// Set up the view port		
 	glViewport(0, 0, w(), h());
 
@@ -698,19 +307,148 @@ void TrainView::draw()
 			this->source_pos.x,
 			this->source_pos.y,
 			this->source_pos.z);
+}
+void TrainView::draw_everything_in_gl1_0() {
+	//draw everything in gl1.0
+	//----------------------------------------------------------------------------------------------------------
+	glEnable(GL_DEPTH_TEST);
+	setupFloor();
+	drawFloor(200, 10); //wall
+	glEnable(GL_LIGHTING);
+	setupObjects();
+	drawStuff(); //control points 
+	// this time drawing is for shadows (except for top view)
+	if (!tw->topCam->value()) {
+		setupShadows();
+		drawStuff(true);
+		unsetupShadows();
+	}
+	//----------------------------------------------------------------------------------------------------------
+}
+//************************************************************************
+//
+// * this is the code that actually draws the window
+//   it puts a lot of the work into other routines to simplify things
+//========================================================================
+GLfloat water_vertices[5400 * 3];
+void TrainView::draw()
+{
+	if (gladLoadGL())
+	{
 
+		set_everything_in_gl1_0();
+		
+		if (!this->skybox_shader) {
+			this->skybox_shader = new
+				Shader(
+					PROJECT_DIR "/src/shaders/skybox.vert",
+					nullptr, nullptr, nullptr,
+					PROJECT_DIR "/src/shaders/skybox.frag");
+		}
+		//bind constant common matrices 
+		//-------------------------------------------------------------
+		if (!this->commom_matrices)
+			this->commom_matrices = new UBO();
+		this->commom_matrices->size = 2 * sizeof(glm::mat4);
+		glGenBuffers(1, &this->commom_matrices->ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
+		glBufferData(GL_UNIFORM_BUFFER, this->commom_matrices->size, NULL, GL_STATIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		//bind for skybox
+		//-------------------------------------------------------------
+		if (!this->skybox) {
+	GLuint element[36];
+	for (int i = 0; i < 36; ++i) { element[i] = i; }
+	GLfloat skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
 
-	//*********************************************************************
-	// now draw the ground plane
-	//*********************************************************************
-	// set to opengl fixed pipeline(use opengl 1.x draw function)
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
 
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	//for(int i= 0; i<36*3; ++i){
+	//	skyboxVertices[i] *= 10;
+	//}
+	this->skybox = new VAO;
+	this->skybox->element_amount = sizeof(element) / sizeof(GLuint);
+	glGenVertexArrays(1, &this->skybox->vao);
+	glGenBuffers(1, this->skybox->vbo);
+	glGenBuffers(1, &this->skybox->ebo);
+	glBindVertexArray(this->skybox->vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, this->skybox->vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Element attribute
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->skybox->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(element), element, GL_STATIC_DRAW);
+
+	// Unbind VAO
+	glBindVertexArray(0);
+}
+		vector<string> skybox_images_path = {
+			PROJECT_DIR "/Images/skybox/right.jpg",
+			PROJECT_DIR "/Images/skybox/left.jpg",
+			PROJECT_DIR "/Images/skybox/top.jpg",
+			PROJECT_DIR "/Images/skybox/bottom.jpg",
+			PROJECT_DIR "/Images/skybox/front.jpg",
+			PROJECT_DIR "/Images/skybox/back.jpg"
+		};
+		if (!this->skybox_texture)
+			this->skybox_texture = new skybox_t(skybox_images_path);
+		//-------------------------------------------------------------
+
+		
+		water.bind();
+		wall.bind();
+	}
+	else
+		throw std::runtime_error("Could not initialize GLAD!");
+	//draw skybox TODO: OOP
+	//----------------------------------------------------------------------------------------------------------
 	glm::mat4 model_matrix = glm::mat4();
 	model_matrix = glm::translate(model_matrix, this->source_pos);
 	model_matrix = glm::scale(model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
-
 	glUseProgram(0);
-
 	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	setUBO();
@@ -720,25 +458,15 @@ void TrainView::draw()
 	glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &modelMatrix);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
-
-	//bind shader
-
-
 	this->skybox_shader->Use();
-
-
 	glUniformMatrix4fv(
 		glGetUniformLocation(this->skybox_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
 	glUniform3fv(
 		glGetUniformLocation(this->skybox_shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
 	glUniform3fv(
 		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	/*this->texture->bind(0);
-	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);*/
-
 	this->skybox_texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
 
@@ -749,108 +477,24 @@ void TrainView::draw()
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS); // set depth function back to default
 	glUseProgram(0);
-
 	glEnable(GL_DEPTH_TEST);
-	glUseProgram(0);
+	//glUseProgram(0);
+	//----------------------------------------------------------------------------------------------------------
+	//End of drawing skybox
 
-	setupFloor();
-	glDisable(GL_LIGHTING);
-	//drawFloor(200,10);
+	draw_everything_in_gl1_0();
 
-
-	//*********************************************************************
-	// now draw the object and we need to do it twice
-	// once for real, and then once for shadows
-	//*********************************************************************
-	glEnable(GL_LIGHTING);
-	setupObjects();
-
-	drawStuff();
-
-	// this time drawing is for shadows (except for top view)
-	if (!tw->topCam->value()) {
-		setupShadows();
-		drawStuff(true);
-		unsetupShadows();
-	}
-
-
-
-
-
-
-
+	//OOP draw wall and water
+	//-----------------------------------------------------------------------------------------------------------
 	setUBO();
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
 
-	//bind shader
-	//this->shader->Use();
-
-
-	//glUniformMatrix4fv(
-	//	glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	//glUniform3fv(
-	//	glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	//glUniform3fv(
-	//	glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	//this->texture->bind(0);
-	//glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
-
-	////bind VAO
-	//glBindVertexArray(this->plane->vao);
-	//glDrawElements(GL_QUADS, this->plane->element_amount, GL_UNSIGNED_INT, 0);
-
-	//glBindVertexArray(0);
-
-	//glUseProgram(0);
-
 	wall.draw();
-	water.draw();
-	//GOGO? gogo
-	setUBO();
-
-	// recalculate the water triangles
-	//int water_vertices_n = 0;
-	//triangles.clear();
-	//water_simulator.get_matrix(triangles);
-	//for (auto& triangle : triangles) { //200
-	//	for (auto& vertice : triangle.vertices) { //3
-	//		water_vertices[water_vertices_n++] = vertice.x;
-	//		water_vertices[water_vertices_n++] = vertice.y;
-	//		water_vertices[water_vertices_n++] = vertice.z;
-	//	}
-	//}
-
-	//rewrite the triangles martics in buffer
-	//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(water_vertices), water_vertices);
-	//this->water_shader->Use();
-
-
-	//glUniformMatrix4fv(
-	//	glGetUniformLocation(this->water_shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
-	//glUniform3fv(
-	//	glGetUniformLocation(this->water_shader->Program, "u_color"),
-	//	1,
-	//	&glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	//glUniform3fv(	
-	//	glGetUniformLocation(this->water_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
-	////this->water->bind(0);
-	////glUniform1i(glGetUniformLocation(this->water_shader->Program, "u_texture"), 0);
-	//glBindVertexArray(this->water_wave->vao);
-	//glDrawElements(GL_TRIANGLES, this->water_wave->element_amount, GL_UNSIGNED_INT, 0);
-	//glBindVertexArray(0);
-
-	//glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-	//unbind VAO
-
-
-	//unbind shader(switch to fixed pipeline)
 	glUseProgram(0);
-
-
-
-
+	water.draw();
+	glUseProgram(0);
+	//-----------------------------------------------------------------------------------------------------------
 }
 
 //************************************************************************

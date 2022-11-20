@@ -27,4 +27,5 @@ void main()
     v_out.normal = mat3(transpose(inverse(u_model))) * normal;
     v_out.texture_coordinate = vec2(texture_coordinate.x, 1.0f - texture_coordinate.y);
     v_out.color = color;
+    
 }

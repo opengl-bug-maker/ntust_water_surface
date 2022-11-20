@@ -16,6 +16,9 @@ void water_t::init() {
 	this->vao->element_amount = (count - 1) * (count - 1) * 2; // todo
 
 	this->data_block_size = { 3, 3, 2 };
+	
+	this->model_matrix = glm::mat4();
+	this->model_matrix = glm::scale(this->model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
 
 	float step = 20.0f / this->count;
 	this->surfaces = new surface * [this->count + 2];
@@ -58,32 +61,33 @@ void water_t::bind() {
 			nullptr, nullptr, nullptr,
 			PROJECT_DIR "/src/shaders/water.frag");
 
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
-	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
+	
+
+
 
 	glGenVertexArrays(1, &this->vao->vao);
 	glGenBuffers(3, this->vao->vbo);
 	glGenBuffers(1, &this->vao->ebo);
 
 	glBindVertexArray(this->vao->vao);
+	
+	//=====================
+    float baisHeight = 10.0f;
 
-	//TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 
-    float baisHeight = 1.0f;
+	
 
-	int start;
 	//position
-	start = 0;
-    for (int i = 0; i < count; i++) {
-        for (int j = 0; j < count; j++) {
-            data[start + (i * count + j) * 3 + 0] = surfaces[i + 1][j + 1].x;
-            data[start + (i * count + j) * 3 + 1] = surfaces[i + 1][j + 1].height + baisHeight;
-            data[start + (i * count + j) * 3 + 2] = surfaces[i + 1][j + 1].y;
-        }
-    }
-	//TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 
-
+	//int start;
+	//start = 0;
+	//
+	 //   for (int i = 0; i < count; i++) {
+	 //       for (int j = 0; j < count; j++) {
+	 //           data[start + (i * count + j) * 3 + 0] = surfaces[i + 1][j + 1].x;
+	 //           data[start + (i * count + j) * 3 + 1] = surfaces[i + 1][j + 1].height + baisHeight;
+	 //           data[start + (i * count + j) * 3 + 2] = surfaces[i + 1][j + 1].y;
+	 //       }
+	 //   }
+	//=====================
 	//position
 	glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, this->count * this->count * (3 + 3 + 2) * sizeof(GLfloat), data, GL_DYNAMIC_DRAW);
@@ -91,10 +95,10 @@ void water_t::bind() {
 	glEnableVertexAttribArray(0);
 	
 	////normal
-	//glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[1]);
-	//glBufferData(GL_ARRAY_BUFFER, this->vao->element_amount * 4 * (3 + 3 + 2) * sizeof(GLfloat), data, GL_STATIC_DRAW);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)(5 * 4 * (3 + 3) * sizeof(GLfloat)));
-	//glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, this->count * this->count * (3 + 3 + 2) * sizeof(GLfloat), data, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)((count * count * 3) * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 
 	////coordinate
 	//glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[2]);
@@ -113,7 +117,22 @@ void water_t::bind() {
 	this->texture = new
 		Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 	this->texture->bind(0);
+	/*uniform vec3 u_color;
+	uniform vec3 light_color;
+	uniform vec3 lightPos;
+	uniform sampler2D u_texture;
+	uniform vec3 eye_position;*/
+	//uniform
+	this->shader->Use();
 	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(1.0f, 1.0f, 1.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "lightPos"), 1, &glm::vec3(0.0f, 20.0f, 1.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &glm::vec3(0.0f, 5.0f, 1.0f)[0]);
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 1.0f, 1.0f)[0]);
 }
 
 
@@ -198,6 +217,23 @@ void water_t::fresh() {
 			data[start + (i * count + j) * 3 + 2] = normal.z;
 		}
 	}
+
+	
+	glBindVertexArray(this->vao->vao);
+
+	//position
+	glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, this->count * this->count * (3 + 3 + 2) * sizeof(GLfloat), data, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (void*)0);
+	glEnableVertexAttribArray(0);
+	
+	//normal
+	glBindBuffer(GL_ARRAY_BUFFER, vao->vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, this->count * this->count * (3 + 3 + 2) * sizeof(GLfloat), data, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)((count * count * 3) * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
 }
 
 void water_t::nextFrame() {

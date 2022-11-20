@@ -251,5 +251,6 @@ void rmzCB(Fl_Widget*, TrainWindow* tw)
 void touchWater(Fl_Widget*, TrainWindow* tw)
 {
 	//tw->trainView->water_simulator.surfaces[15][15].height = 6;
+	tw->trainView->water.touchWater(6);
 }
 
