@@ -1,5 +1,9 @@
 #include "water.h"
-
+#include "TrainWindow.h"
+#include "TrainView.h"
+#include "Utilities/ArcBallCam.h"
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
 water_t::water_t() {
 	init();
 }
@@ -117,6 +121,9 @@ void water_t::bind() {
 	this->texture = new
 		Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 	this->texture->bind(0);
+	this->skybox->bind(1);
+
+
 	/*uniform vec3 u_color;
 	uniform vec3 light_color;
 	uniform vec3 lightPos;
@@ -124,13 +131,21 @@ void water_t::bind() {
 	uniform vec3 eye_position;*/
 	//uniform
 	this->shader->Use();
-	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
+	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"),0);
+	glUniform1i(glGetUniformLocation(this->shader->Program, "skybox"), 1);
 	glUniform3fv(
 		glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(1.0f, 1.0f, 1.0f)[0]);
 	glUniform3fv(
 		glGetUniformLocation(this->shader->Program, "lightPos"), 1, &glm::vec3(0.0f, 20.0f, 1.0f)[0]);
+	//glUniform3fv(
+	//	glGetUniformLocation(this->shader->Program, "eye_position"), 1, &glm::vec3(0.0f, 2.0f, 0.0f)[0]);
+	glm::vec3 eye = glm::vec3(
+		TrainWindow::magic->trainView->arcball.eyeX,
+		TrainWindow::magic->trainView->arcball.eyeY,
+		TrainWindow::magic->trainView->arcball.eyeZ
+	);
 	glUniform3fv(
-		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &glm::vec3(0.0f, 5.0f, 1.0f)[0]);
+		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &eye[0]);
 	glUniform3fv(
 		glGetUniformLocation(this->shader->Program, "light_color"), 1, &glm::vec3(1.0f, 1.0f, 1.0f)[0]);
 }
@@ -159,19 +174,26 @@ void water_t::fresh() {
 			float slowdown = 0.7;
 			float speed = 0.8;
 
-             surfaces[i][j].height = (1 + slowdown) * surfaces[i][j].t1Height -
-                 slowdown * surfaces[i][j].t2Height +
+             //surfaces[i][j].height = (1 + slowdown) * surfaces[i][j].t1Height -
+             //    slowdown * surfaces[i][j].t2Height +
 
-                 0.5f * speed * speed * (
-                     l + r + u + d - 4 * surfaces[i][j].t1Height
-                     ) * tickLength * tickLength;
-
+             //    0.5f * speed * speed * (
+             //        l + r + u + d - 4 * surfaces[i][j].t1Height
+             //        ) * tickLength * tickLength;
+			 
             //surfaces[i][j].height = (1 + tw->SlowDown->value()) * surfaces[i][j].t1Height -
             //    tw->SlowDown->value() * surfaces[i][j].t2Height +
 
             //    0.5f * tw->Speed->value() * tw->Speed->value() * (
             //        l + r + u + d - 4 * surfaces[i][j].t1Height
             //        ) * tickLength * tickLength;
+
+            surfaces[i][j].height = (1 + TrainWindow::magic->SlowDown->value()) * surfaces[i][j].t1Height -
+                TrainWindow::magic->SlowDown->value() * surfaces[i][j].t2Height +
+
+                0.5f * TrainWindow::magic->Speed->value() * TrainWindow::magic->Speed->value() * (
+                    l + r + u + d - 4 * surfaces[i][j].t1Height
+                    ) * tickLength * tickLength;
         }
     }
 
@@ -233,7 +255,31 @@ void water_t::fresh() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(GLfloat), (GLvoid*)((count * count * 3) * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 
+	//texture cube
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->id);
 	glBindVertexArray(0);
+	
+	glm::vec4 eye{
+		-TrainWindow::magic->trainView->arcball.eyeX,
+		-TrainWindow::magic->trainView->arcball.eyeY,
+		-TrainWindow::magic->trainView->arcball.eyeZ,
+		1.0f
+	};
+
+	HMatrix Hmatrix; //wtf???
+	Quat qAll = TrainWindow::magic->trainView->arcball.now * TrainWindow::magic->trainView->arcball.start;
+	qAll.toMatrix(Hmatrix);
+
+	glm::mat4 view_matrix;
+	for(int i = 0; i < 4; ++i){for(int j = 0; j < 4; ++j){view_matrix[i][j] = Hmatrix[i][j];}}
+
+	eye = view_matrix * eye;
+	eye = -eye;
+	
+	this->shader->Use();
+
+	glUniform3fv(
+		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &eye[0]);
 }
 
 void water_t::nextFrame() {
@@ -243,4 +289,8 @@ void water_t::nextFrame() {
 
 void water_t::touchWater(float height) {
     surfaces[count / 2 + 1][count / 2 + 1].height = height;
+}
+
+void water_t::set_skybox(skybox_t* skybox){
+	this->skybox = skybox;
 }

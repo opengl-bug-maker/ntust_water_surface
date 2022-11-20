@@ -136,16 +136,11 @@ setProjection(bool doClear)
   glLoadIdentity();
 
   // Use the transformation in the ArcBall
-  cerr << -eyeX << " " << endl;
-  cerr << -eyeY << " " << endl; 
-  cerr << -eyeZ << " " << endl;
+  cerr << -eyeX << " ";
+  cerr << -eyeY << " "; 
+  cerr << -eyeZ << " ";
   cerr << endl;
   glTranslatef(-eyeX, -eyeY, -eyeZ);
-  //我們要從這裡在他乘 glTranlatef之前  把view偷出來 :))
-  //不用阿 getmatrix (hmatrix)就可以抓出來了 他也是這樣抓的
-  //不行啊 那你這裡的這行要開嗎 我不知道你要怎麼改欸 ((在哪裡call 
-  //開阿 其他走正常的gl get model matrix
-  //skybox 走 arcball.get martrix
   multMatrix();
 }
 

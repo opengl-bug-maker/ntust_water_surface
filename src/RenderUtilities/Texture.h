@@ -51,17 +51,19 @@ public:
 	}
 	void bind(GLenum bind_unit)
 	{
+		//glActiveTexture(GL_TEXTURE0 + bind_unit);
 		glActiveTexture(GL_TEXTURE0 + bind_unit);
-		glBindTexture(GL_TEXTURE_2D, this->id);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
 	}
 	static void unbind(GLenum bind_unit)
 	{
 		glActiveTexture(GL_TEXTURE0 + bind_unit);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	}
 	glm::ivec2 size;
-private:
 	GLuint id;
+private:
+	
 
 };
 

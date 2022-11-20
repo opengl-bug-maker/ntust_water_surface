@@ -36,6 +36,7 @@
 #include "CallBacks.H"
 
 
+TrainWindow* TrainWindow::magic;
 
 //************************************************************************
 //
@@ -46,6 +47,7 @@ TrainWindow(const int x, const int y)
 	: Fl_Double_Window(x,y,800,600,"Train and Roller Coaster")
 //========================================================================
 {
+	TrainWindow::magic = this;
 	// make all of the widgets
 	begin();	// add to this widget
 	{

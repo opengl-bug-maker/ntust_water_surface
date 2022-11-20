@@ -437,7 +437,7 @@ void TrainView::draw()
 			this->skybox_texture = new skybox_t(skybox_images_path);
 		//-------------------------------------------------------------
 
-		
+		water.set_skybox(this->skybox_texture);
 		water.bind();
 		wall.bind();
 	}
@@ -469,7 +469,6 @@ void TrainView::draw()
 		glGetUniformLocation(this->skybox_shader->Program, "light_color"), 1, &glm::vec3(1.0f, 0.7f, 0.7f)[0]);
 	this->skybox_texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->skybox_shader->Program, "u_texture"), 0);
-
 	//bind VAO
 	glBindVertexArray(this->skybox->vao);
 	glDrawElements(GL_TRIANGLES, this->skybox->element_amount, GL_UNSIGNED_INT, 0);

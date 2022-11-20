@@ -1,3 +1,4 @@
+#pragma once
 #include "gpu_object.h"
 #include "Utilities/Pnt3f.H"
 #include <glm/glm.hpp>
@@ -24,11 +25,13 @@ class water_t : public gpu_obj_t {
 
 public:
 	void bind() override;
+    skybox_t* skybox;
 	water_t();
 	water_t(GLfloat* input_data);
-    
+   
     TrainWindow* tw;
 
     void nextFrame();
     void touchWater(float height);
+    void set_skybox(skybox_t*);
 };
