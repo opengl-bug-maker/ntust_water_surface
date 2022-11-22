@@ -76,7 +76,7 @@ void water_t::bind() {
 	glBindVertexArray(this->vao->vao);
 	
 	//=====================
-    float baisHeight = 10.0f;
+    //float baisHeight = 10.0f;
 
 	
 
@@ -118,8 +118,10 @@ void water_t::bind() {
 	glBindVertexArray(0);
 
 	////todo : texture
-	this->texture = new
-		Texture2D(PROJECT_DIR "/Images/tiles.jpg");
+	this->texture = new Texture2D();
+	this->texture->set2dTexture(PROJECT_DIR "/Images/tiles.jpg");
+	//this->texture = new
+	//	Texture2D(PROJECT_DIR "/Images/tiles.jpg");
 	this->texture->bind(0);
 	this->skybox->bind(1);
 
@@ -256,6 +258,7 @@ void water_t::fresh() {
 	glEnableVertexAttribArray(1);
 
 	//texture cube
+	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->id);
 	glBindVertexArray(0);
 	
@@ -291,6 +294,6 @@ void water_t::touchWater(float height) {
     surfaces[count / 2 + 1][count / 2 + 1].height = height;
 }
 
-void water_t::set_skybox(skybox_t* skybox){
+void water_t::set_skybox(Texture2D* skybox){
 	this->skybox = skybox;
 }

@@ -25,7 +25,8 @@ class water_t : public gpu_obj_t {
 
 public:
 	void bind() override;
-    skybox_t* skybox;
+    //skybox_t* skybox;
+    Texture2D* skybox;
 	water_t();
 	water_t(GLfloat* input_data);
    
@@ -33,5 +34,6 @@ public:
 
     void nextFrame();
     void touchWater(float height);
-    void set_skybox(skybox_t*);
+    //void set_skybox(skybox_t*);
+    void set_skybox(Texture2D*);
 };

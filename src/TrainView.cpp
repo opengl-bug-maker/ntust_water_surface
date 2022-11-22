@@ -313,7 +313,7 @@ void TrainView::draw_everything_in_gl1_0() {
 	//----------------------------------------------------------------------------------------------------------
 	glEnable(GL_DEPTH_TEST);
 	setupFloor();
-	drawFloor(200, 10); //wall
+	//drawFloor(200, 10); 
 	glEnable(GL_LIGHTING);
 	setupObjects();
 	drawStuff(); //control points 
@@ -433,8 +433,11 @@ void TrainView::draw()
 			PROJECT_DIR "/Images/skybox/front.jpg",
 			PROJECT_DIR "/Images/skybox/back.jpg"
 		};
-		if (!this->skybox_texture)
-			this->skybox_texture = new skybox_t(skybox_images_path);
+		if (!this->skybox_texture){
+			//this->skybox_texture = new Textuqre2D(skybox_images_path);
+			this->skybox_texture = new Texture2D();
+			this->skybox_texture->setSkyboxTexture(skybox_images_path);
+		}
 		//-------------------------------------------------------------
 
 		water.set_skybox(this->skybox_texture);
@@ -489,8 +492,12 @@ void TrainView::draw()
 	glBindBufferRange(
 		GL_UNIFORM_BUFFER, /*binding point*/0, this->commom_matrices->ubo, 0, this->commom_matrices->size);
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
 	wall.draw();
+	glDisable(GL_CULL_FACE);
 	glUseProgram(0);
+
 	water.draw();
 	glUseProgram(0);
 	//-----------------------------------------------------------------------------------------------------------

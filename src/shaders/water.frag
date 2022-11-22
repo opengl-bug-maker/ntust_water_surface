@@ -17,7 +17,7 @@ uniform sampler2D u_texture;
 uniform samplerCube skybox;
 void main()
 {   
-	float ambientStrength = 1.0f;
+	float ambientStrength = 0.3f;
 	vec3 ambient = ambientStrength * light_color;
 	
 	vec3 norm = normalize(f_in.normal);
@@ -41,5 +41,5 @@ void main()
 
     //vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*f_in.color;
     //f_color = vec4(0.92f, 0.5f, 0.77f, 1.0f);
-	f_color = reflected;
+	f_color =  reflected*0.7+vec4(result, 1.0f)*0.3f;
 }

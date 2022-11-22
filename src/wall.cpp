@@ -17,29 +17,32 @@ void wall_t::init() {
 	this->vao->element_amount = 5;
 
 	this->data_block_size = { 3, 3, 2 };
+	
+	this->model_matrix = glm::mat4();
+	this->model_matrix = glm::scale(this->model_matrix, glm::vec3(10.0f, 10.0f, 10.0f));
 
 	this->data = new float[] {
 		//vertices
 
 		10.0f, 15.0f, -10.0f,  //the first wall
-		-10.0f, 15.0f, -10.0f,
-		-10.0f, -0.5f, -10.0f,
 		10.0f, -0.5f, -10.0f,
+		-10.0f, -0.5f, -10.0f,
+		-10.0f, 15.0f, -10.0f,
 
 		-10.0f, 15.0f, 10.0f,  //the second wall
 		-10.0f, 15.0f, -10.0f,
 		-10.0f, -0.5f, -10.0f,
 		-10.0f, -0.5f, 10.0f,
-
+			
 		10.0f, -0.5f, 10.0f,  //floor
-		10.0f, -0.5f, -10.0f,
-		-10.0f, -0.5f, -10.0f,
 		-10.0f, -0.5f, 10.0f,
+		-10.0f, -0.5f, -10.0f,
+		10.0f, -0.5f, -10.0f,
 
 		10.0f, 15.0f, 10.0f,  //the third wall
-		10.0f, 15.0f, -10.0f,
-		10.0f, -0.5f, -10.0f,
 		10.0f, -0.5f, 10.0f,
+		10.0f, -0.5f, -10.0f,
+		10.0f, 15.0f, -10.0f,
 
 		10.0f, 15.0f, 10.0f,  //the forth wall
 		-10.0f, 15.0f, 10.0f,
@@ -76,9 +79,9 @@ void wall_t::init() {
 		//texture coordinate
 
 		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
 		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
 
 		0.0f, 1.0f,
 		0.0f, 0.0f,
@@ -86,19 +89,19 @@ void wall_t::init() {
 		1.0f, 1.0f,
 
 		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
 		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
 
 		0.0f, 1.0f,
-		0.0f, 0.0f,
-		1.0f, 0.0f,
 		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
 
 		0.0f, 1.0f,
-		0.0f, 0.0f,
+		1.0f, 1.0f,
 		1.0f, 0.0f,
-		1.0f, 1.0f
+		0.0f, 0.0f
 
 	};
 
@@ -231,8 +234,8 @@ void wall_t::bind() {
 	glBindVertexArray(0);
 
 	////todo : texture
-	this->texture = new
-		Texture2D(PROJECT_DIR "/Images/tiles.jpg");
+	this->texture = new Texture2D();
+	this->texture->set2dTexture(PROJECT_DIR "/Images/tiles.jpg");
 	this->texture->bind(0);
 	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 }

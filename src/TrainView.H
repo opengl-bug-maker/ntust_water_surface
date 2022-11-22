@@ -106,7 +106,8 @@ class TrainView : public Fl_Gl_Window
 		Shader* water_shader = nullptr;
 		Shader* skybox_shader = nullptr;
 		Texture2D* texture	= nullptr;
-		skybox_t* skybox_texture = nullptr;
+		Texture2D* skybox_texture	= nullptr;
+		//skybox_t* skybox_texture = nullptr;
 		VAO* plane			= nullptr;
 		VAO* water_wave = nullptr;
 		VAO* skybox = nullptr;

@@ -11,7 +11,7 @@
 class gpu_obj_t {
 protected:
 	Texture2D* texture = nullptr; //init
-	skybox_t* skybox = nullptr; //init
+	//skybox_t* skybox = nullptr; //init
 	VAO* vao = nullptr; //mutiple vbos and 1 ebo
 
 	GLfloat* data = nullptr; //init
