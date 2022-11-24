@@ -264,6 +264,16 @@ getMatrix(HMatrix m) const
 	qAll.toMatrix(m);
 }
 
+void ArcBallCam::getEyePosition(glm::vec4 eyePosition) const {
+	HMatrix mat;
+	Quat qAll = now * start;
+	qAll.toMatrix(mat);
+	glm::mat4 m;
+	for (int i = 0; i < 4; ++i) for(int j = 0; j < 4; ++j) {m[i][j] = mat[i][j];}
+	eyePosition = glm::vec4(eyeX, eyeY, eyeZ, 1.0);
+	eyePosition = m * eyePosition;
+}
+
 //**************************************************************************
 //
 // * a simplified interface - so you never see the insides of arcball

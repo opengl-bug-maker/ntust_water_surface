@@ -31,18 +31,18 @@ vec3 getWallColor(vec3 point) {
 
     vec3 wallColor;
     //vec3 normal;
-    if (abs(point.x) > 0.999) {
-        wallColor = texture2D(u_texture, point.yz * 0.5 + vec2(1.0, 0.5)).rgb;
+    if (abs(point.x) > 99.999) {
+        wallColor = texture2D(u_texture, point.yz * 0.005 + vec2(1.0, 0.5)).rgb;
         //normal = vec3(-point.x, 0.0, 0.0);
-    } else if (abs(point.z) > 0.999) {
-        wallColor = texture2D(u_texture, point.yx * 0.5 + vec2(1.0, 0.5)).rgb;
+    } else if (abs(point.z) > 99.999) {
+        wallColor = texture2D(u_texture, point.yx * 0.005 + vec2(1.0, 0.5)).rgb;
         //normal = vec3(0.0, 0.0, -point.z);
     } else {
-        wallColor = texture2D(u_texture, point.xz * 0.5 + 0.5).rgb;
+        wallColor = texture2D(u_texture, point.xz * 0.005 + 0.5).rgb;
         //normal = vec3(0.0, 1.0, 0.0);
     }
 
-    scale /= length(point);
+    //scale /= length(point);
 
     return wallColor * scale;
 }
@@ -54,7 +54,7 @@ vec3 getWallTexture(vec3 origin, vec3 ray) {
 
     vec3 color;
 
-    vec2 t = intersectCube(origin, ray, vec3(-1.0, -5.0, -1.0), vec3(1.0, 2.0, 1.0));
+    vec2 t = intersectCube(origin, ray, vec3(-100.0, -0.0, -100.0), vec3(100.0, 2.0, 100.0));
 
     if (ray.y < 0.0) {
         color = getWallColor(origin + ray * t.y);
@@ -68,13 +68,14 @@ vec3 getWallTexture(vec3 origin, vec3 ray) {
             //color += vec3(pow(max(0.0, dot(light, ray)), 5000.0)) * vec3(10.0, 8.0, 6.0);
         }
     }
-
+    
+    //color *= light_color;
     return color;
 }
 
 void main()
 {   
-	float ambientStrength = 0.3f;
+	float ambientStrength = 1.0f;
 	vec3 ambient = ambientStrength * light_color;
 	
 	vec3 norm = normalize(f_in.normal);
@@ -105,12 +106,14 @@ void main()
 	vec3 Refract = refract(I, normalize(norm), 1.00 / 1.33);
     vec4 refracted = vec4(getWallTexture(f_in.position, Refract), 1.0);
 
-    vec4 fl_fr = mix(refracted, reflected, fresnel);
+    //vec4 fl_fr = mix(refracted, reflected, fresnel);
+    vec4 fl_fr = mix(refracted, reflected, 0.2);
 
 
     //vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*f_in.color;
     //f_color = vec4(0.92f, 0.5f, 0.77f, 1.0f);
 	//f_color =  reflected*0.7+vec4(result, 1.0f)*0.3f;
-	//f_color =  fl_fr*0.7+vec4(result, 1.0f)*0.3f;
-	f_color =  refracted;
+	f_color =  fl_fr*0.7+vec4(result, 1.0f)*0.3f;
+	//f_color =  reflected;
+	//f_color =  refracted;
 }

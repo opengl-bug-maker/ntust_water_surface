@@ -51,7 +51,9 @@
 #pragma once
 
 #include "3DUtils.H"
-
+#include <glm-0.9.8.5/glm/glm/detail/type_vec.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 //***************************************************************************
 //
 // * if you need to pass that to OpenGL, try...
@@ -157,6 +159,9 @@ class ArcBallCam {
 
 		// this gets the global matrix (start and now)
 		void getMatrix(HMatrix) const;
+
+
+		void getEyePosition(glm::vec4 eyePosition) const;
 
 		// Spin the ball by some vector - if you don't understand
 		// how an arcball works, you probably don't care about this
