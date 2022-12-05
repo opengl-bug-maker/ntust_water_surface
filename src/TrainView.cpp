@@ -626,6 +626,7 @@ doPick()
 	int mx = Fl::event_x();
 	int my = Fl::event_y();
 
+
 	// get the viewport - most reliable way to turn mouse coords into GL coords
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -639,6 +640,299 @@ doPick()
 
 	// now set up the projection
 	setProjection();
+
+	
+	////////////////////////////////////////////////////////////////
+	
+	//glPushMatrix();
+	//glLoadIdentity();
+
+	glm::mat4 view_matrix;
+	glGetFloatv(GL_MODELVIEW_MATRIX, &view_matrix[0][0]);
+
+	glm::vec4 trans = glm::vec4(view_matrix[3][0],view_matrix[3][1],view_matrix[3][2],0);
+	//view_matrix[3][0] = 0;
+	//view_matrix[3][1] = 0;
+	//view_matrix[3][2] = 0;
+
+	std::cout << "view_matrix" << std::endl;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			std::cout << view_matrix[i][j] << " ";
+		}
+		std::cout << "\n";
+	}
+	
+	HMatrix mat;
+	Quat qAll = this->arcball.now * this->arcball.start;//這行 窩看看 gogo
+	//qAll = qAll.conjugate();
+	qAll.toMatrix(mat);
+	glm::mat4 m;
+	for (int i = 0; i < 4; ++i) for(int j = 0; j < 4; ++j) {m[i][j] = mat[i][j];}
+
+	std::cout << "arcball view_matrix" << std::endl;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			std::cout << m[i][j] << " ";
+		}
+		std::cout << "\n";
+	}
+
+	glm::mat4 projection_matrix;
+	glGetFloatv(GL_PROJECTION_MATRIX, &projection_matrix[0][0]);
+	projection_matrix[0][0] = 1 / 0.1f;
+	projection_matrix[1][1] = 1 / 0.1f;
+	projection_matrix[2][0] = 0;
+	projection_matrix[2][1] = 0;
+
+	std::cout << "projection_matrix" << std::endl;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			std::cout << projection_matrix[i][j] << " ";
+		}
+		std::cout << "\n";
+	}
+	//glm::mat4 result = projection_matrix * view_matrix;
+	//glm::mat4 result = view_matrix * projection_matrix;
+	//std::cout << "result" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	for(int j = 0; j < 4; j++){
+	//		std::cout << result[i][j] << " ";
+	//	}
+	//	std::cout << "\n";
+	//}
+
+	glm::vec4 point = glm::vec4(0, 0, 0, 1);
+	glm::vec4 point1 = glm::vec4(0, 10, 0, 1);
+	glm::vec4 temp;
+	
+	//point = point - trans;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "trans" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << point[i] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//point = view_matrix * point;
+	point = view_matrix * point;
+	//point = glm::transpose(view_matrix * projection_matrix) * point;
+	std::cout << "view" << std::endl;
+	for(int i = 0; i < 4; i++){
+		std::cout << point[i] << " ";
+	}
+	std::cout << "\n";
+	
+	point = projection_matrix * point;
+	//point = glm::transpose(view_matrix * projection_matrix) * point;
+	std::cout << "project" << std::endl;
+	for(int i = 0; i < 4; i++){
+		std::cout << point[i] << " ";
+	}
+	std::cout << "\n";
+
+
+	point1 = view_matrix * point1;
+	//point = glm::transpose(view_matrix * projection_matrix) * point;
+	std::cout << "view" << std::endl;
+	for(int i = 0; i < 4; i++){
+		std::cout << point1[i] << " ";
+	}
+	std::cout << "\n";
+	
+	point1 = projection_matrix * point1;
+	//point = glm::transpose(view_matrix * projection_matrix) * point;
+	std::cout << "project" << std::endl;
+	for(int i = 0; i < 4; i++){
+		std::cout << point1[i] << " ";
+	}
+	std::cout << "\n";
+
+	glm::vec4 eyePosition;
+	arcball.getEyePosition(eyePosition);
+	std::cout << "eye ";
+	for(int i = 0; i < 4; i++){
+		std::cout << eyePosition[i] << " ";
+	}
+	std::cout << "\n";
+
+	float mouseX, mouseY;
+	arcball.getMouseNDC(mouseX, mouseY);
+	glm::vec4 mousePoint = glm::vec4(mouseX, mouseY, 1, 1);
+	std::cout << "mousePoint ";
+	for(int i = 0; i < 4; i++){
+		std::cout << mousePoint[i] << " ";
+	}
+	std::cout << "\n";
+
+	mousePoint = glm::inverse(projection_matrix) * mousePoint;
+	std::cout << "inverse projection ";
+	for(int i = 0; i < 4; i++){
+		std::cout << mousePoint[i] << " ";
+	}
+	std::cout << "\n";
+
+	mousePoint = glm::inverse(view_matrix) * mousePoint;
+	std::cout << "inverse view ";
+	for(int i = 0; i < 4; i++){
+		std::cout << mousePoint[i] << " ";
+	}
+	std::cout << "\n";
+
+	float waterheight = 140;
+	float mul = (eyePosition[1] - waterheight) / (eyePosition[1] - mousePoint[1]);
+	mousePoint[0] = eyePosition[0] - (eyePosition[0] - mousePoint[0]) * mul;
+	mousePoint[1] = eyePosition[1] - (eyePosition[1] - mousePoint[1]) * mul;
+	mousePoint[2] = eyePosition[2] - (eyePosition[2] - mousePoint[2]) * mul;
+	
+	std::cout << "mouse proj ";
+	for(int i = 0; i < 4; i++){
+		std::cout << mousePoint[i] << " ";
+	}
+	std::cout << "\n";
+
+	
+	//temp = view_matrix * point;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "test temp" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//temp = projection_matrix * view_matrix * point;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "test" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//temp = projection_matrix * view_matrix * point1;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "test1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = glm::transpose(projection_matrix) * glm::transpose(view_matrix) * point;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "test" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//temp = glm::transpose(projection_matrix) * glm::transpose(view_matrix) * point1;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "test1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//temp = result * point;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//temp = result * point1;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = view_matrix * (projection_matrix * point);
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = view_matrix * (projection_matrix * point1);
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = (point * projection_matrix) * view_matrix;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = (point1 * projection_matrix) * view_matrix;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = (point * projection_matrix) * view_matrix;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "look here point" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] / temp[3] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = (point1 * projection_matrix) * view_matrix;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "look here point1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] / temp[3] << " ";
+	//}
+	//std::cout << "\n";
+	
+	//temp = (point * view_matrix) * projection_matrix;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	//temp = (point1 * view_matrix) * projection_matrix;
+	////point = glm::transpose(view_matrix * projection_matrix) * point;
+	//std::cout << "point1" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	std::cout << temp[i] << " ";
+	//}
+	//std::cout << "\n";
+
+	////temp = glm::inverse(result) * point;
+	//////point = glm::transpose(view_matrix * projection_matrix) * point;
+	////std::cout << "point inverse" << std::endl;
+	////for(int i = 0; i < 4; i++){
+	////	std::cout << temp[i] << " ";
+	////}
+	
+	//std::cout << "\n";
+	//std::cout << "\n";
+	////glPopMatrix();
+
+
+
+
+
+
+
+
+
+
+	////////////////////////////////////////////////////////////////
 
 	// now draw the objects - but really only see what we hit
 	GLuint buf[100];
@@ -681,6 +975,23 @@ void TrainView::setUBO()
 	glm::mat4 projection_matrix;
 	glGetFloatv(GL_PROJECTION_MATRIX, &projection_matrix[0][0]);
 	//projection_matrix = glm::perspective(glm::radians(this->arcball.getFoV()), (GLfloat)wdt / (GLfloat)hgt, 0.01f, 1000.0f);
+
+	
+	//std::cout << "ubo view_matrix" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	for(int j = 0; j < 4; j++){
+	//		std::cout << view_matrix[i][j] << " ";
+	//	}
+	//	std::cout << "\n";
+	//}
+
+	//std::cout << "ubo projection_matrix" << std::endl;
+	//for(int i = 0; i < 4; i++){
+	//	for(int j = 0; j < 4; j++){
+	//		std::cout << projection_matrix[i][j] << " ";
+	//	}
+	//	std::cout << "\n";
+	//}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, this->commom_matrices->ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &projection_matrix[0][0]);

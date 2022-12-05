@@ -96,6 +96,14 @@ class TrainWindow : public Fl_Double_Window {
 		Fl_Value_Slider*	Speed;
 		Fl_Value_Slider*	SlowDown;
 
+		// the type of the water
+		Fl_Browser*			waterBrowser;
+
+		
+		Fl_Value_Slider*	WaveLength;
+		Fl_Value_Slider*	Amptitude;
+		Fl_Value_Slider*	BaisHeight;  
+
 		// we have other widgets as part of the sample solution
 		// this is not for 559 students to know about
 #ifdef EXAMPLE_SOLUTION

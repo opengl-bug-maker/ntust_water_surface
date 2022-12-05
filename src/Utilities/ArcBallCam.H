@@ -161,7 +161,7 @@ class ArcBallCam {
 		void getMatrix(HMatrix) const;
 
 
-		void getEyePosition(glm::vec4 eyePosition) const;
+		void getEyePosition(glm::vec4& eyePosition) const;
 
 		// Spin the ball by some vector - if you don't understand
 		// how an arcball works, you probably don't care about this

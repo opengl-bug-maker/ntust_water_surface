@@ -136,10 +136,10 @@ setProjection(bool doClear)
   glLoadIdentity();
 
   // Use the transformation in the ArcBall
-  cerr << -eyeX << " ";
-  cerr << -eyeY << " "; 
-  cerr << -eyeZ << " ";
-  cerr << endl;
+  //cerr << -eyeX << " ";
+  //cerr << -eyeY << " "; 
+  //cerr << -eyeZ << " ";
+  //cerr << endl;
   glTranslatef(-eyeX, -eyeY, -eyeZ);
   multMatrix();
 }
@@ -204,7 +204,6 @@ handle(int e)
 			return 1;
 			};
 			break;
-
 	}
 	return 0;
 }
@@ -241,6 +240,7 @@ void ArcBallCam::
 down(const float x, const float y)
 //==========================================================================
 {
+	//¦­¦w¡G¡^
 	start = now * start;
 	now = Quat();		// identity
 
@@ -264,7 +264,7 @@ getMatrix(HMatrix m) const
 	qAll.toMatrix(m);
 }
 
-void ArcBallCam::getEyePosition(glm::vec4 eyePosition) const {
+void ArcBallCam::getEyePosition(glm::vec4& eyePosition) const {
 	HMatrix mat;
 	Quat qAll = now * start;
 	qAll.toMatrix(mat);

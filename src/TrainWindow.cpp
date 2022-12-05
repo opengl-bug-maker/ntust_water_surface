@@ -44,7 +44,7 @@ TrainWindow* TrainWindow::magic;
 //========================================================================
 TrainWindow::
 TrainWindow(const int x, const int y) 
-	: Fl_Double_Window(x,y,800,600,"Train and Roller Coaster")
+	: Fl_Double_Window(x,y,800,600,"WA++TER")
 //========================================================================
 {
 	TrainWindow::magic = this;
@@ -164,6 +164,36 @@ TrainWindow(const int x, const int y)
 
 		pty += 30;
 
+		waterBrowser = new Fl_Browser(605,pty,120,75,"Water Type");
+		waterBrowser->type(2);
+		waterBrowser->callback((Fl_Callback*)damageCB,this);
+		waterBrowser->add("Interative");
+		waterBrowser->add("Sin wave");
+		waterBrowser->select(1);
+
+		pty += 110;
+		WaveLength = new Fl_Value_Slider(655,pty,140,20,"WaveLength");
+		WaveLength->range(0,1);
+		WaveLength->value(0.6);
+		WaveLength->align(FL_ALIGN_LEFT);
+		WaveLength->type(FL_HORIZONTAL);
+
+		pty += 30;
+		Amptitude = new Fl_Value_Slider(655,pty,140,20,"Amptitude");
+		Amptitude->range(2,5);
+		Amptitude->value(3.6);
+		Amptitude->align(FL_ALIGN_LEFT);
+		Amptitude->type(FL_HORIZONTAL);
+
+		pty += 30;
+		BaisHeight = new Fl_Value_Slider(655,pty,140,20,"BaisHeight");
+		BaisHeight->range(0,4);
+		BaisHeight->value(2);
+		BaisHeight->align(FL_ALIGN_LEFT);
+		BaisHeight->type(FL_HORIZONTAL);
+
+		pty += 30;
+
 		// TODO: add widgets for all of your fancier features here
 #ifdef EXAMPLE_SOLUTION
 		makeExampleWidgets(this,pty);
@@ -218,9 +248,14 @@ advanceTrain(float dir)
 //========================================================================
 {
 	trainView->tick++;
+	trainView->water.tw = this;
 	/*trainView->water_simulator.tickBack();
 	trainView->water_simulator.fresh();*/
-	trainView->water.nextFrame();
+	if(waterBrowser->value() == 1){
+		trainView->water.nextFrame();
+	}else if(waterBrowser->value() == 2){
+		trainView->water.sineWave(trainView->tick);
+	}
 	//#####################################################################
 	// TODO: make this work for your train
 	//#####################################################################

@@ -199,9 +199,12 @@ void water_t::fresh() {
         }
     }
 
-	//================================================================
+	glFresh();
+}
+
+void water_t::glFresh() {
 	
-    float baisHeight = 1.0f;
+    float baisHeight = 14.0f;
 
 	int start;
 	//position
@@ -285,6 +288,16 @@ void water_t::fresh() {
 		glGetUniformLocation(this->shader->Program, "eye_position"), 1, &eye[0]);
 }
 
+void water_t::sineWave(int t) {
+	for (int i = 1; i <= count; ++i) {
+		for (int j = 1; j <= count; ++j) {
+			surfaces[i][j].height = sin((i + j + t) * 3.14159265358979 / 14 * tw->WaveLength->value()) * tw->Amptitude->value() + tw->BaisHeight->value();
+		}
+	}
+
+	glFresh();
+}
+
 void water_t::nextFrame() {
     tickBack();
     fresh();
@@ -292,6 +305,10 @@ void water_t::nextFrame() {
 
 void water_t::touchWater(float height) {
     surfaces[count / 2 + 1][count / 2 + 1].height = height;
+}
+
+void water_t::mouseTouchWater(int x, int y, float force) {
+    surfaces[x][y].height = -force;
 }
 
 void water_t::set_skybox(Texture2D* skybox){

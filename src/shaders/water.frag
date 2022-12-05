@@ -107,13 +107,13 @@ void main()
     vec4 refracted = vec4(getWallTexture(f_in.position, Refract), 1.0);
 
     //vec4 fl_fr = mix(refracted, reflected, fresnel);
-    vec4 fl_fr = mix(refracted, reflected, 0.2);
+    vec4 fl_fr = mix(refracted, reflected, 0.7);
 
 
     //vec3 color = vec3(texture(u_texture, f_in.texture_coordinate))*f_in.color;
     //f_color = vec4(0.92f, 0.5f, 0.77f, 1.0f);
 	//f_color =  reflected*0.7+vec4(result, 1.0f)*0.3f;
-	f_color =  fl_fr*0.7+vec4(result, 1.0f)*0.3f;
+	f_color =  fl_fr*0.8+vec4(result, 1.0f)*0.2f;
 	//f_color =  reflected;
 	//f_color =  refracted;
 }

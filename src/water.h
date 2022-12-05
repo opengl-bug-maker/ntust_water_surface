@@ -22,6 +22,7 @@ class water_t : public gpu_obj_t {
 
     void tickBack();
     void fresh();
+    void glFresh();
 
 public:
 	void bind() override;
@@ -32,8 +33,10 @@ public:
    
     TrainWindow* tw;
 
+    void sineWave(int t);
     void nextFrame();
     void touchWater(float height);
+    void mouseTouchWater(int x, int y, float force);
     //void set_skybox(skybox_t*);
     void set_skybox(Texture2D*);
 };
